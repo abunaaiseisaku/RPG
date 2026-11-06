@@ -1,336 +1,936 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>一番好き RPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一番好き - RPG</title>
+
 <style>
-*{box-sizing:border-box}
-body{
- background:#111827;color:white;font-family:sans-serif;
- margin:0;padding:15px;text-align:center
+* {
+    box-sizing: border-box;
 }
-h1{color:#ffd166}
-.box{
- background:#202c40;border:1px solid #52647d;
- border-radius:15px;padding:16px;margin:12px auto;
- max-width:650px
+
+body {
+    margin: 0;
+    padding: 15px;
+    background: #10121a;
+    color: #f4f4f4;
+    font-family: sans-serif;
 }
-button{
- background:#3478ad;color:white;border:0;
- padding:13px;border-radius:9px;font-size:15px;
- font-weight:bold;cursor:pointer;margin:4px
+
+.container {
+    max-width: 750px;
+    margin: auto;
 }
-button:disabled{opacity:.4}
-button.special{background:#986b27}
-button.danger{background:#9b3947}
-button:active{transform:scale(.97)}
-.bar{height:13px;background:#45536a;border-radius:10px;overflow:hidden;margin:5px 0 12px}
-.fill{height:100%;transition:width .3s}
-.hp{background:#ff6577}
-.mp{background:#55aaff}
-#story{line-height:1.9;white-space:pre-line;min-height:100px}
-#log{
- background:#0d1421;padding:12px;border-radius:10px;
- text-align:left;min-height:100px;line-height:1.8
+
+h1, h2, h3 {
+    text-align: center;
 }
-.enemy{font-size:25px;color:#ffca8a;font-weight:bold}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.actions button{width:100%;margin:0}
-.hidden{display:none}
+
+h1 {
+    color: #f5d36b;
+    letter-spacing: 4px;
+}
+
+.panel {
+    background: #202432;
+    border: 1px solid #454b60;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.character-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+    gap: 10px;
+}
+
+.character-card {
+    background: #303749;
+    border: 2px solid #596078;
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: 0.2s;
+}
+
+.character-card:hover {
+    border-color: #f5d36b;
+    transform: translateY(-3px);
+}
+
+.character-card.selected {
+    border-color: #f5d36b;
+    background: #48452f;
+}
+
+.character-card h3 {
+    margin: 5px 0;
+    color: #f5d36b;
+}
+
+.character-card p {
+    font-size: 12px;
+    color: #ccc;
+}
+
+button {
+    background: #4b6cba;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 15px;
+    cursor: pointer;
+    margin: 4px;
+}
+
+button:hover {
+    filter: brightness(1.2);
+}
+
+button:disabled {
+    background: #555;
+    cursor: not-allowed;
+}
+
+.main-button {
+    background: #c18a35;
+    width: 100%;
+    font-weight: bold;
+    margin-top: 12px;
+}
+
+.battle-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.battle-buttons button {
+    margin: 0;
+    min-height: 48px;
+}
+
+.status {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.status-box {
+    background: #303749;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.bar {
+    height: 13px;
+    background: #111;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.hp-bar {
+    height: 100%;
+    background: #e34e5d;
+    transition: width 0.3s;
+}
+
+.mp-bar {
+    height: 100%;
+    background: #4d9be8;
+    transition: width 0.3s;
+}
+
+.enemy-area {
+    text-align: center;
+    padding: 15px;
+    background: #292d3d;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.enemy-name {
+    font-size: 23px;
+    color: #ff7777;
+    font-weight: bold;
+}
+
+.enemy-icon {
+    font-size: 55px;
+    margin: 10px;
+}
+
+#log {
+    height: 170px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
+    background: #0b0d13;
+    border: 1px solid #555;
+    border-radius: 8px;
+    text-align: left;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+.log-entry {
+    font-size: 14px;
+    line-height: 1.7;
+    border-bottom: 1px solid #252a38;
+    padding: 3px 0;
+}
+
+.player-log {
+    color: #8fc5ff;
+}
+
+.enemy-log {
+    color: #ff8585;
+}
+
+.system-log {
+    color: #f5d36b;
+}
+
+.hidden {
+    display: none;
+}
+
+.center {
+    text-align: center;
+}
+
+.small {
+    font-size: 12px;
+    color: #aaa;
+}
+
+.story-text {
+    line-height: 1.9;
+    white-space: pre-wrap;
+    min-height: 100px;
+}
+
+#message {
+    min-height: 25px;
+    text-align: center;
+    color: #f5d36b;
+    margin: 10px 0;
+}
+
+@media(max-width: 420px) {
+    body {
+        padding: 8px;
+    }
+
+    .panel {
+        padding: 11px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 11px 8px;
+    }
+}
 </style>
 </head>
+
 <body>
+<div class="container">
 
-<h1>『一番好き』</h1>
-<p>群馬高専・能力者編 RPG</p>
+<h1>一番好き</h1>
+<p class="center small">― 能力者たちの物語 ―</p>
 
-<div class="box" id="start">
-<h2>プロローグ</h2>
-<p id="story">
-群馬高専には奇妙な噂がある。
+<!-- キャラクター選択 -->
+<div id="selectScreen" class="panel">
+    <h2>主人公を選択</h2>
+    <p class="center">5人の中から1人を選んでください。</p>
 
-――この学校には能力者がいる。
+    <div id="characterList" class="character-list"></div>
 
-よく眠る学生、T.Y.。
-ある日、学校を揺るがす戦いに巻き込まれる。
-</p>
-<button onclick="begin()">ゲーム開始</button>
+    <div id="selectedInfo" class="panel hidden"></div>
+
+    <button id="startButton" class="main-button" disabled onclick="startGame()">
+        ゲーム開始
+    </button>
 </div>
 
-<div id="game" class="hidden">
-
-<div class="box">
-<h3 id="chapter">第1話 群馬高専</h3>
-<div>T.Y.　Lv.<span id="lv">1</span></div>
-HP <span id="hpText"></span>
-<div class="bar"><div id="hpBar" class="fill hp"></div></div>
-MP <span id="mpText"></span>
-<div class="bar"><div id="mpBar" class="fill mp"></div></div>
-経験値 <span id="exp">0</span>
+<!-- ストーリー画面 -->
+<div id="storyScreen" class="panel hidden">
+    <h2 id="chapterTitle"></h2>
+    <div id="storyText" class="story-text"></div>
+    <button class="main-button" onclick="beginBattle()">戦闘開始</button>
 </div>
 
-<div class="box">
-<h2 id="scene">戦闘開始</h2>
-<div id="storyText"></div>
-<br>
-<div id="enemyArea" class="hidden">
-<div class="enemy" id="enemyName"></div>
-<p id="enemyDesc"></p>
-HP <span id="enemyHp"></span>
-<div class="bar"><div id="enemyBar" class="fill hp"></div></div>
-</div>
+<!-- バトル画面 -->
+<div id="battleScreen" class="hidden">
+
+    <div class="panel">
+        <h2 id="battleTitle">BATTLE</h2>
+
+        <div class="enemy-area">
+            <div id="enemyIcon" class="enemy-icon">👤</div>
+            <div id="enemyName" class="enemy-name"></div>
+            <p id="enemyHpText"></p>
+            <div class="bar">
+                <div id="enemyHpBar" class="hp-bar"></div>
+            </div>
+        </div>
+
+        <div class="status">
+            <div class="status-box">
+                <strong id="playerName"></strong>
+                <p id="playerLevel"></p>
+                <p id="playerHpText"></p>
+                <div class="bar">
+                    <div id="playerHpBar" class="hp-bar"></div>
+                </div>
+            </div>
+
+            <div class="status-box">
+                <strong>MP</strong>
+                <p id="playerMpText"></p>
+                <div class="bar">
+                    <div id="playerMpBar" class="mp-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <p id="expText" class="center small"></p>
+    </div>
+
+    <div class="panel">
+        <h3>コマンド</h3>
+        <div class="battle-buttons">
+            <button id="attackButton" onclick="playerAction('attack')">
+                ⚔️ 攻撃
+            </button>
+
+            <button id="skillButton" onclick="playerAction('skill')">
+                ✨ 特殊技
+            </button>
+
+            <button id="defendButton" onclick="playerAction('defend')">
+                🛡️ 防御
+            </button>
+
+            <button id="restButton" onclick="playerAction('rest')">
+                💠 休憩
+            </button>
+        </div>
+
+        <p id="skillDescription" class="small center"></p>
+        <div id="message"></div>
+    </div>
+
+    <div class="panel">
+        <h3>バトルログ</h3>
+        <div id="log"></div>
+        <p class="small center">ログ欄を上下にスワイプして確認できます。</p>
+    </div>
 </div>
 
-<div class="box">
-<h3>コマンド</h3>
-<div class="actions" id="commands">
-<button onclick="attack()">通常攻撃</button>
-<button onclick="guard()">防御</button>
-<button class="special" onclick="sleep()">寝落ち</button>
-<button class="special" onclick="favorite()">一番好き</button>
-</div>
-</div>
-
-<div class="box">
-<h3>バトルログ</h3>
-<div id="log"></div>
-</div>
-
-<div class="box hidden" id="result">
-<h2 id="resultTitle">勝利！</h2>
-<p id="resultText"></p>
-<button onclick="next()">次へ進む</button>
+<!-- 勝利・敗北画面 -->
+<div id="resultScreen" class="panel hidden">
+    <h2 id="resultTitle"></h2>
+    <div id="resultText" class="story-text"></div>
+    <button id="resultButton" class="main-button" onclick="resultNext()"></button>
 </div>
 
 </div>
 
 <script>
-const chapters=[
-{
-name:"第1話 群馬高専",
-enemy:"U.",
-desc:"能力：かませ犬。追い詰められるほど強くなる。",
-hp:75,power:10,
-story:"校舎が揺れた。\nU.「今日から、この学校は俺のものだ」\n\nT.Y.の前に、強敵が立ちはだかる。",
-win:"U.は吹き飛ばされた。しかし、背後からI.が現れた。"
-},
-{
-name:"第2話 テクニシャン",
-enemy:"I.",
-desc:"能力：一手先。相手の次の行動を読む。",
-hp:100,power:13,
-story:"I.「君の行動はすべて読める」\n\n飛び交う文房具。T.Y.は攻撃を避けられない。",
-win:"眠っている間、I.の先読みは機能しなかった。T.Y.は寝落ちの能力を習得した。"
-},
-{
-name:"第3話 ヘドロ",
-enemy:"M.",
-desc:"能力：価値を奪う。触れたものを泥に変える。",
-hp:130,power:16,
-story:"床が黒い泥に変わっていく。\nM.「この学校全部を泥にしてやる」",
-win:"M.を撃破。寝落ちの力が強化された。"
-},
-{
-name:"第4話 能力者",
-enemy:"K.",
-desc:"能力：欠席。存在を認識から消す。",
-hp:160,power:20,
-story:"K.「全員、戦え」\n\n能力者たちが集結する。校舎が崩れ始めた。",
-win:"K.を追い詰めた。T.Y.の能力の正体が明らかになる。"
-},
-{
-name:"最終話 一番好き",
-enemy:"K. 最終形態",
-desc:"能力：存在そのものを消し去る。",
-hp:230,power:25,
-story:"K.「お前はここで消える」\n\nT.Y.「俺、ここが一番好きだから」",
-win:"K.の能力が崩壊した。\n\nT.Y.「もう疲れた。寝る」\n\n翌朝、学校には誰もいなかった。\n机の上には一行だけ残されていた。\n\n『俺は、ここが一番好きだった。』"
-}
+const characters = [
+    {
+        id: "TY",
+        name: "高瀬 陽之助",
+        type: "バランス型",
+        hp: 120,
+        mp: 50,
+        atk: 22,
+        skill: "寝落ち",
+        cost: 12,
+        description: "次の敵の攻撃を無効化し、HPを20回復する。",
+        icon: "😴",
+        skillType: "sleep"
+    },
+    {
+        id: "U",
+        name: "上村",
+        type: "パワー型",
+        hp: 155,
+        mp: 30,
+        atk: 30,
+        skill: "かませ犬",
+        cost: 15,
+        description: "敵に強力な一撃を与える。HP40%未満で攻撃力上昇。",
+        icon: "🔥",
+        skillType: "power"
+    },
+    {
+        id: "I",
+        name: "今村",
+        type: "テクニック型",
+        hp: 100,
+        mp: 65,
+        atk: 20,
+        skill: "一手先",
+        cost: 12,
+        description: "次の攻撃を回避し、敵に反撃する。",
+        icon: "⚡",
+        skillType: "predict"
+    },
+    {
+        id: "M",
+        name: "松浦",
+        type: "特殊型",
+        hp: 135,
+        mp: 50,
+        atk: 23,
+        skill: "ヘドロ",
+        cost: 15,
+        description: "敵を攻撃し、敵の攻撃力を下げる。",
+        icon: "🟣",
+        skillType: "mud"
+    },
+    {
+        id: "K",
+        name: "黒木",
+        type: "トリッキー型",
+        hp: 95,
+        mp: 85,
+        atk: 19,
+        skill: "欠席",
+        cost: 20,
+        description: "次の敵の攻撃を無効化する。",
+        icon: "🌑",
+        skillType: "absence"
+    }
 ];
 
-let stage=0,hp=120,maxHp=120,mp=40,maxMp=40;
-let lv=1,exp=0,enemyHp=0,enemyMax=0;
-let defending=false,invincible=false,busy=false;
+const stages = [
+    {
+        title: "第1話　始まり",
+        enemy: "上村",
+        icon: "🔥",
+        hp: 110,
+        atk: 18,
+        exp: 30,
+        story:
+`いつも通りの日常。
+授業が終わり、静かな校舎に残っていた陽之助たち。
 
-function begin(){
- document.getElementById("start").classList.add("hidden");
- document.getElementById("game").classList.remove("hidden");
- loadStage();
+しかし、その日だけは違った。
+
+目の前に現れたのは、能力を持つ者だった。
+
+「お前も能力者なのか？」
+
+上村は笑いながら構えた。
+
+こうして、戦いが始まった。`
+    },
+    {
+        title: "第2話　テクニシャン",
+        enemy: "今村",
+        icon: "⚡",
+        hp: 145,
+        atk: 22,
+        exp: 40,
+        story:
+`上村との戦いを終えた一行。
+
+その前に現れたのは今村だった。
+
+「その能力、少し借りるね」
+
+今村の指先が光る。
+
+触れた物体の役割を移す能力。
+そして、相手が次に決めた行動を読む能力。
+
+簡単には勝てそうにない相手だった。`
+    },
+    {
+        title: "第3話　ヘドロ",
+        enemy: "松浦",
+        icon: "🟣",
+        hp: 180,
+        atk: 25,
+        exp: 50,
+        story:
+`次に現れたのは松浦。
+
+「価値を奪う」
+
+触れられたものは泥へと変わっていく。
+
+さらに、地面へ沈める能力まで持っている。
+
+足元が不気味に揺れ始めた。`
+    },
+    {
+        title: "第4話　能力者",
+        enemy: "黒木",
+        icon: "🌑",
+        hp: 210,
+        atk: 29,
+        exp: 65,
+        story:
+`すべての戦いの裏にいた黒木。
+
+黒木の能力は「欠席」。
+自分の存在を認識させなくする。
+
+そして「出席」。
+認識した存在を戦場へ引きずり込む。
+
+黒木は静かに言った。
+
+「ここまで来たことを後悔させてやる」`
+    },
+    {
+        title: "最終話　一番好き",
+        enemy: "黒木・最終形態",
+        icon: "👁️",
+        hp: 280,
+        atk: 34,
+        exp: 100,
+        story:
+`黒木との最後の戦い。
+
+「お前の存在を消してやる」
+
+黒木の力が校舎全体を包み込む。
+
+しかし、陽之助は立ち上がった。
+
+自分が一番好きだと思った場所。
+その場所全体を、自分に都合のよい空間へと変える能力。
+
+「一番好き」
+
+最後の戦いが始まる。`
+    }
+];
+
+let selectedCharacter = null;
+let player = null;
+let enemy = null;
+let stageIndex = 0;
+let busy = false;
+let guarding = false;
+let nullify = false;
+let predicted = false;
+let enemyAttackDown = false;
+let currentResult = "";
+
+function $(id) {
+    return document.getElementById(id);
 }
 
-function loadStage(){
- const c=chapters[stage];
- document.getElementById("chapter").textContent=c.name;
- document.getElementById("scene").textContent="VS "+c.enemy;
- document.getElementById("storyText").textContent=c.story;
- document.getElementById("enemyArea").classList.remove("hidden");
- document.getElementById("enemyName").textContent=c.enemy;
- document.getElementById("enemyDesc").textContent=c.desc;
- enemyHp=enemyMax=c.hp;
- defending=false;invincible=false;
- document.getElementById("result").classList.add("hidden");
- document.getElementById("commands").classList.remove("hidden");
- log("戦闘開始！ "+c.enemy+" が現れた！");
- update();
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function log(t){
- let l=document.getElementById("log");
- let p=document.createElement("p");
- p.textContent=t;
- l.appendChild(p);
- l.scrollTop=l.scrollHeight;
+// キャラクター選択画面
+function createCharacterCards() {
+    const list = $("characterList");
+
+    characters.forEach((c, index) => {
+        const card = document.createElement("div");
+        card.className = "character-card";
+        card.innerHTML = `
+            <div style="font-size:35px">${c.icon}</div>
+            <h3>${c.name}</h3>
+            <p>${c.type}</p>
+            <p>HP ${c.hp} / MP ${c.mp}</p>
+            <p>攻撃力 ${c.atk}</p>
+            <p>特殊技：${c.skill}</p>
+        `;
+
+        card.onclick = () => selectCharacter(index);
+        list.appendChild(card);
+    });
 }
 
-function update(){
- document.getElementById("hpText").textContent=hp+"/"+maxHp;
- document.getElementById("mpText").textContent=mp+"/"+maxMp;
- document.getElementById("hpBar").style.width=hp/maxHp*100+"%";
- document.getElementById("mpBar").style.width=mp/maxMp*100+"%";
- document.getElementById("enemyHp").textContent=enemyHp+"/"+enemyMax;
- document.getElementById("enemyBar").style.width=enemyHp/enemyMax*100+"%";
- document.getElementById("lv").textContent=lv;
- document.getElementById("exp").textContent=exp;
+function selectCharacter(index) {
+    selectedCharacter = characters[index];
+
+    document.querySelectorAll(".character-card").forEach((card, i) => {
+        card.classList.toggle("selected", i === index);
+    });
+
+    $("selectedInfo").classList.remove("hidden");
+    $("selectedInfo").innerHTML = `
+        <h3>${selectedCharacter.name}</h3>
+        <p>タイプ：${selectedCharacter.type}</p>
+        <p>HP：${selectedCharacter.hp}</p>
+        <p>MP：${selectedCharacter.mp}</p>
+        <p>攻撃力：${selectedCharacter.atk}</p>
+        <p>特殊技：${selectedCharacter.skill}</p>
+        <p>${selectedCharacter.description}</p>
+    `;
+
+    $("startButton").disabled = false;
 }
 
-function disableActions(){
- busy=true;
- document.querySelectorAll("#commands button").forEach(b=>b.disabled=true);
-}
-function enableActions(){
- busy=false;
- document.querySelectorAll("#commands button").forEach(b=>b.disabled=false);
-}
-function wait(ms){return new Promise(r=>setTimeout(r,ms))}
+function startGame() {
+    if (!selectedCharacter) return;
 
-async function attack(){
- if(busy)return;
- disableActions();
- let damage=20+lv*3;
- log("T.Y.の攻撃！");
- await wait(500);
- enemyHp=Math.max(0,enemyHp-damage);
- log(damage+" ダメージ！");
- update();
- await wait(650);
- await enemyTurn();
+    player = {
+        ...selectedCharacter,
+        maxHp: selectedCharacter.hp,
+        maxMp: selectedCharacter.mp,
+        level: 1,
+        exp: 0,
+        nextExp: 50
+    };
+
+    stageIndex = 0;
+    $("selectScreen").classList.add("hidden");
+
+    loadStage();
 }
 
-async function guard(){
- if(busy)return;
- disableActions();
- defending=true;
- log("T.Y.は身構えた！");
- await wait(500);
- await enemyTurn();
+function loadStage() {
+    busy = false;
+    guarding = false;
+    nullify = false;
+    predicted = false;
+    enemyAttackDown = false;
+
+    const stage = stages[stageIndex];
+
+    $("storyScreen").classList.remove("hidden");
+    $("battleScreen").classList.add("hidden");
+    $("resultScreen").classList.add("hidden");
+
+    $("chapterTitle").textContent = stage.title;
+    $("storyText").textContent = stage.story;
 }
 
-async function sleep(){
- if(busy||mp<10||stage===0)return;
- disableActions();
- mp-=10;
- invincible=true;
- hp=Math.min(maxHp,hp+20);
- log("T.Y.「……寝る」");
- update();
- await wait(1000);
- log("T.Y.は深い眠りに落ちた……");
- await wait(700);
- log("寝落ち発動！次の攻撃を無効化！");
- await enemyTurn();
+function beginBattle() {
+    const stage = stages[stageIndex];
+
+    enemy = {
+        name: stage.enemy,
+        icon: stage.icon,
+        hp: stage.hp,
+        maxHp: stage.hp,
+        atk: stage.atk
+    };
+
+    $("storyScreen").classList.add("hidden");
+    $("battleScreen").classList.remove("hidden");
+
+    $("battleTitle").textContent = stage.title;
+    $("enemyName").textContent = enemy.name;
+    $("enemyIcon").textContent = enemy.icon;
+    $("skillDescription").textContent =
+        `${player.skill}（MP ${player.cost}）：${player.description}`;
+
+    $("log").innerHTML = "";
+    addLog(`${enemy.name}が現れた！`, "system-log");
+    addLog("どうする？", "system-log");
+
+    updateStatus();
+    setButtons(true);
 }
 
-async function favorite(){
- if(busy||mp<20||stage<3)return;
- disableActions();
- mp-=20;
- let damage=stage===4?95:65;
- log("T.Y.「ここが一番好き」");
- await wait(800);
- log("『一番好き』発動！");
- await wait(500);
- enemyHp=Math.max(0,enemyHp-damage);
- log(damage+" ダメージ！");
- update();
- await wait(700);
- await enemyTurn();
+function addLog(text, type = "") {
+    const log = $("log");
+    const entry = document.createElement("div");
+
+    entry.className = "log-entry " + type;
+    entry.textContent = text;
+
+    log.appendChild(entry);
+
+    // 新しいログが追加されたら最下部へ移動
+    log.scrollTop = log.scrollHeight;
 }
 
-async function enemyTurn(){
- if(enemyHp<=0){win();return}
- await wait(400);
- log(chapters[stage].enemy+"の攻撃！");
- await wait(650);
+function updateStatus() {
+    $("playerName").textContent = player.name;
+    $("playerLevel").textContent = `Lv.${player.level}`;
+    $("playerHpText").textContent =
+        `HP：${Math.max(0, player.hp)} / ${player.maxHp}`;
 
- let damage=chapters[stage].power+Math.floor(Math.random()*6);
- if(stage===0&&enemyHp<enemyMax/2)damage+=8;
+    $("playerMpText").textContent =
+        `MP：${player.mp} / ${player.maxMp}`;
 
- if(invincible){
-  damage=0;invincible=false;
-  log("攻撃が無効化された！");
- }else if(defending){
-  damage=Math.ceil(damage/2);
-  defending=false;
-  log("防御成功！ダメージ半減！");
- }
- if(damage>0){
-  hp=Math.max(0,hp-damage);
-  log("T.Y.は"+damage+"ダメージを受けた！");
- }
- update();
- await wait(500);
+    $("playerHpBar").style.width =
+        Math.max(0, player.hp / player.maxHp * 100) + "%";
 
- if(hp<=0){
-  defeat();
-  return;
- }
- enableActions();
+    $("playerMpBar").style.width =
+        Math.max(0, player.mp / player.maxMp * 100) + "%";
+
+    $("enemyHpText").textContent =
+        `HP：${Math.max(0, enemy.hp)} / ${enemy.maxHp}`;
+
+    $("enemyHpBar").style.width =
+        Math.max(0, enemy.hp / enemy.maxHp * 100) + "%";
+
+    $("expText").textContent =
+        `EXP：${player.exp} / ${player.nextExp}`;
 }
 
-async function win(){
- busy=true;
- document.getElementById("commands").classList.add("hidden");
- log("敵を撃破した！");
- await wait(700);
- exp+=40+stage*20;
- if(exp>=60){
-  exp=0;lv++;maxHp+=15;maxMp+=5;
-  hp=Math.min(maxHp,hp+30);
-  mp=Math.min(maxMp,mp+15);
-  log("レベルアップ！ Lv."+lv);
- }
- hp=Math.min(maxHp,hp+20);
- mp=Math.min(maxMp,mp+10);
- update();
- document.getElementById("resultTitle").textContent="勝利！";
- document.getElementById("resultText").textContent=chapters[stage].win;
- document.getElementById("result").classList.remove("hidden");
- document.querySelector("#result button").textContent=
- stage===4?"タイトルへ戻る":"次の章へ進む";
+function setButtons(enabled) {
+    $("attackButton").disabled = !enabled;
+    $("skillButton").disabled = !enabled;
+    $("defendButton").disabled = !enabled;
+    $("restButton").disabled = !enabled;
 }
 
-function defeat(){
- busy=true;
- document.getElementById("commands").classList.add("hidden");
- document.getElementById("resultTitle").textContent="敗北……";
- document.getElementById("resultText").textContent="T.Y.は倒れてしまった。もう一度挑戦しよう。";
- document.getElementById("result").classList.remove("hidden");
- document.querySelector("#result button").textContent="再挑戦";
+async function playerAction(type) {
+    if (busy || !player || !enemy) return;
+
+    busy = true;
+    setButtons(false);
+
+    if (type === "attack") {
+        let damage = player.atk;
+
+        if (player.id === "U" &&
+            player.hp < player.maxHp * 0.4) {
+            damage = Math.floor(damage * 1.5);
+            addLog("かませ犬の能力が発動！攻撃力上昇！", "system-log");
+        }
+
+        enemy.hp -= damage;
+        addLog(`${player.name}の攻撃！ ${damage}ダメージ！`, "player-log");
+
+    } else if (type === "skill") {
+        if (player.mp < player.cost) {
+            addLog("MPが足りない！", "system-log");
+            busy = false;
+            setButtons(true);
+            return;
+        }
+
+        player.mp -= player.cost;
+        await useSkill();
+
+    } else if (type === "defend") {
+        guarding = true;
+        addLog(`${player.name}は防御の構えをとった！`, "player-log");
+
+    } else if (type === "rest") {
+        const recovery = 15;
+        player.mp = Math.min(player.maxMp, player.mp + recovery);
+        addLog(`MPが${recovery}回復した！`, "player-log");
+    }
+
+    updateStatus();
+
+    if (enemy.hp <= 0) {
+        enemy.hp = 0;
+        updateStatus();
+        await delay(700);
+        victory();
+        return;
+    }
+
+    // プレイヤーの行動と敵の反撃の間に演出時間
+    await delay(1000);
+
+    await enemyTurn();
+
+    if (player.hp <= 0) {
+        player.hp = 0;
+        updateStatus();
+        await delay(500);
+        defeat();
+        return;
+    }
+
+    updateStatus();
+    busy = false;
+    setButtons(true);
 }
 
-function next(){
- if(hp<=0){
-  hp=maxHp;mp=maxMp;loadStage();return;
- }
- if(stage===4){
-  location.reload();return;
- }
- stage++;
- hp=Math.min(maxHp,hp+25);
- mp=Math.min(maxMp,mp+15);
- loadStage();
+async function useSkill() {
+    switch (player.skillType) {
+
+        case "sleep":
+            nullify = true;
+            player.hp = Math.min(player.maxHp, player.hp + 20);
+            addLog("寝落ち！次の攻撃を無効化する！", "player-log");
+            addLog("HPが20回復した！", "system-log");
+            break;
+
+        case "power": {
+            let damage = 55 + player.level * 3;
+            if (player.hp < player.maxHp * 0.4) {
+                damage = Math.floor(damage * 1.3);
+            }
+            enemy.hp -= damage;
+            addLog(`かませ犬！ ${damage}ダメージ！`, "player-log");
+            break;
+        }
+
+        case "predict": {
+            predicted = true;
+            const damage = Math.floor(player.atk * 1.5);
+            enemy.hp -= damage;
+            addLog("一手先！敵の行動を読んだ！", "player-log");
+            addLog(`${damage}ダメージ！`, "player-log");
+            break;
+        }
+
+        case "mud": {
+            const damage = 35 + player.level * 2;
+            enemy.hp -= damage;
+            enemyAttackDown = true;
+            addLog(`ヘドロ！ ${damage}ダメージ！`, "player-log");
+            addLog("敵の攻撃力が低下した！", "system-log");
+            break;
+        }
+
+        case "absence":
+            nullify = true;
+            addLog("欠席！自分の存在を消した！", "player-log");
+            addLog("次の攻撃を無効化する！", "system-log");
+            break;
+    }
+
+    updateStatus();
 }
+
+async function enemyTurn() {
+    addLog(`${enemy.name}のターン！`, "system-log");
+
+    await delay(650);
+
+    if (predicted) {
+        predicted = false;
+        addLog("攻撃を完全に読んでいた！", "player-log");
+
+        const counterDamage = Math.floor(player.atk * 1.2);
+        enemy.hp -= counterDamage;
+
+        addLog(`反撃！ ${counterDamage}ダメージ！`, "player-log");
+        updateStatus();
+        return;
+    }
+
+    if (nullify) {
+        nullify = false;
+        addLog("攻撃は無効化された！", "player-log");
+        return;
+    }
+
+    let damage = enemy.atk;
+
+    if (enemyAttackDown) {
+        damage = Math.floor(damage * 0.6);
+        enemyAttackDown = false;
+    }
+
+    if (guarding) {
+        damage = Math.floor(damage * 0.5);
+        guarding = false;
+        addLog("防御によってダメージを軽減！", "system-log");
+    }
+
+    player.hp -= damage;
+    addLog(`${enemy.name}の攻撃！ ${damage}ダメージ！`, "enemy-log");
+
+    updateStatus();
+}
+
+function victory() {
+    busy = true;
+    setButtons(false);
+
+    const stage = stages[stageIndex];
+
+    player.exp += stage.exp;
+
+    let levelMessage = "";
+
+    while (player.exp >= player.nextExp) {
+        player.exp -= player.nextExp;
+        player.level++;
+        player.nextExp = Math.floor(player.nextExp * 1.4);
+
+        player.maxHp += 15;
+        player.maxMp += 8;
+        player.atk += 4;
+
+        player.hp = Math.min(player.maxHp, player.hp + 25);
+        player.mp = Math.min(player.maxMp, player.mp + 15);
+
+        levelMessage += `\nレベルアップ！ Lv.${player.level}`;
+    }
+
+    $("battleScreen").classList.add("hidden");
+    $("resultScreen").classList.remove("hidden");
+
+    $("resultTitle").textContent = "VICTORY！";
+    $("resultText").textContent =
+        `${enemy.name}に勝利した！\n経験値 ${stage.exp} を獲得！${levelMessage}`;
+
+    if (stageIndex === stages.length - 1) {
+        $("resultText").textContent +=
+            `\n\nすべての戦いが終わった。\n\n陽之助は静かに眠り続けた。\n\n翌朝、校舎は閉鎖され、記録は消えていた。\n\n机の上には、こう書かれていた。\n\n「俺は、ここが一番好きだった。」`;
+
+        $("resultButton").textContent = "最初に戻る";
+        currentResult = "clear";
+    } else {
+        $("resultButton").textContent = "次の章へ";
+        currentResult = "next";
+    }
+}
+
+function defeat() {
+    busy = true;
+    setButtons(false);
+
+    $("battleScreen").classList.add("hidden");
+    $("resultScreen").classList.remove("hidden");
+
+    $("resultTitle").textContent = "DEFEAT...";
+    $("resultText").textContent =
+        `${player.name}は倒れてしまった。\n\nもう一度挑戦することができる。`;
+
+    $("resultButton").textContent = "再挑戦";
+    currentResult = "retry";
+}
+
+function resultNext() {
+    if (currentResult === "clear") {
+        location.reload();
+        return;
+    }
+
+    if (currentResult === "retry") {
+        player.hp = player.maxHp;
+        player.mp = player.maxMp;
+        loadStage();
+        return;
+    }
+
+    if (currentResult === "next") {
+        stageIndex++;
+
+        // 次の章ではHP・MPを少し回復
+        player.hp = Math.min(player.maxHp, player.hp + 30);
+        player.mp = Math.min(player.maxMp, player.mp + 15);
+
+        loadStage();
+    }
+}
+
+createCharacterCards();
 </script>
+
 </body>
 </html>
