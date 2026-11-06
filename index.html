@@ -1,454 +1,336 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>秘密の夜のチャット</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>一番好き RPG</title>
 <style>
 *{box-sizing:border-box}
 body{
- margin:0;background:#100d16;color:white;
- font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+ background:#111827;color:white;font-family:sans-serif;
+ margin:0;padding:15px;text-align:center
 }
-button{cursor:pointer;font-family:inherit}
-.app{
- max-width:520px;margin:auto;height:100dvh;
- display:flex;flex-direction:column;
- background:#1c1723;overflow:hidden;
+h1{color:#ffd166}
+.box{
+ background:#202c40;border:1px solid #52647d;
+ border-radius:15px;padding:16px;margin:12px auto;
+ max-width:650px
 }
-header{
- padding:17px;text-align:center;
- background:#2c2033;font-size:18px;font-weight:bold;
- border-bottom:1px solid #49344e;
+button{
+ background:#3478ad;color:white;border:0;
+ padding:13px;border-radius:9px;font-size:15px;
+ font-weight:bold;cursor:pointer;margin:4px
 }
-.screen{flex:1;overflow-y:auto;padding:17px}
-h2{text-align:center;color:#f4a3cf}
-.sub{text-align:center;color:#aaa;font-size:13px}
-.characters{display:grid;gap:15px;margin-top:22px}
-.character{
- border:1px solid #60425f;border-radius:17px;
- overflow:hidden;background:#2b2030;
+button:disabled{opacity:.4}
+button.special{background:#986b27}
+button.danger{background:#9b3947}
+button:active{transform:scale(.97)}
+.bar{height:13px;background:#45536a;border-radius:10px;overflow:hidden;margin:5px 0 12px}
+.fill{height:100%;transition:width .3s}
+.hp{background:#ff6577}
+.mp{background:#55aaff}
+#story{line-height:1.9;white-space:pre-line;min-height:100px}
+#log{
+ background:#0d1421;padding:12px;border-radius:10px;
+ text-align:left;min-height:100px;line-height:1.8
 }
-.character img{
- width:100%;height:175px;object-fit:cover;
- display:block;
-}
-.charinfo{padding:13px}
-.charinfo h3{margin:0;color:#ffadd6}
-.charinfo p{font-size:13px;color:#ccc;line-height:1.6}
-.primary{
- width:100%;padding:13px;border:0;border-radius:12px;
- background:linear-gradient(100deg,#c04e8b,#8249a3);
- color:white;font-size:15px;font-weight:bold;
-}
-.secondary{
- padding:10px;border:1px solid #88638d;
- background:#392a40;color:white;border-radius:10px;
-}
-.profile{
- background:#29202e;padding:13px;
- border-bottom:1px solid #453449;
-}
-.profiletop{display:flex;justify-content:space-between;align-items:center}
-.profiletop strong{color:#ffa9d3;font-size:18px}
-.stats{
- display:grid;grid-template-columns:1fr 1fr;
- gap:8px;margin-top:12px;
-}
-.stat{font-size:12px;color:#ccc}
-.track{
- height:7px;background:#493e4d;border-radius:10px;
- margin-top:5px;overflow:hidden;
-}
-.fill{height:100%;background:#e77bb1;transition:width .4s}
-.chat{
- flex:1;overflow-y:auto;padding:15px;
- display:flex;flex-direction:column;
-}
-.msg{
- max-width:87%;padding:12px 14px;
- margin:8px 0;border-radius:15px;
- white-space:pre-wrap;line-height:1.6;
- animation:fade .3s;
-}
-@keyframes fade{
- from{opacity:0;transform:translateY(7px)}
- to{opacity:1;transform:translateY(0)}
-}
-.left{background:#423248;align-self:flex-start}
-.right{background:#9e417a;align-self:flex-end}
-.system{
- color:#aaa;font-size:11px;text-align:center;
- margin:10px;
-}
-.typing{color:#d5a9c9;font-size:12px;padding:5px}
-.choices{
- padding:12px;background:#2b2130;
- border-top:1px solid #48364d;
-}
-.choice{
- display:block;width:100%;padding:13px;
- margin:7px 0;border:1px solid #80547c;
- border-radius:12px;background:#403047;
- color:white;text-align:left;font-size:14px;
-}
-.choice:active{background:#795071}
-.choice:disabled{opacity:.5}
-.hidden{display:none!important}
-.end{text-align:center;padding:30px 15px}
-.end h2{font-size:25px}
-.end p{line-height:1.8;color:#ddd}
+.enemy{font-size:25px;color:#ffca8a;font-weight:bold}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.actions button{width:100%;margin:0}
+.hidden{display:none}
 </style>
 </head>
 <body>
-<div class="app">
-<header>🌙 秘密の夜のチャット</header>
 
-<!-- キャラクター選択 -->
-<section class="screen" id="select">
-<h2>今夜、誰と話す？</h2>
-<p class="sub">3人の女性との秘密の恋愛ストーリー</p>
-<div class="characters" id="characters"></div>
-</section>
+<h1>『一番好き』</h1>
+<p>群馬高専・能力者編 RPG</p>
 
-<!-- ゲーム -->
-<section id="game" class="hidden" style="flex:1;min-height:0;display:flex;flex-direction:column">
-<div class="profile">
- <div class="profiletop">
-  <strong id="name"></strong>
-  <button class="secondary" onclick="back()">退出</button>
- </div>
- <div class="sub" id="relationship" style="text-align:left;margin-top:5px"></div>
- <div class="stats" id="stats"></div>
+<div class="box" id="start">
+<h2>プロローグ</h2>
+<p id="story">
+群馬高専には奇妙な噂がある。
+
+――この学校には能力者がいる。
+
+よく眠る学生、T.Y.。
+ある日、学校を揺るがす戦いに巻き込まれる。
+</p>
+<button onclick="begin()">ゲーム開始</button>
 </div>
-<div class="chat" id="chat"></div>
-<div class="choices" id="choices"></div>
-</section>
 
-<!-- エンディング -->
-<section id="ending" class="screen hidden">
-<div class="end">
-<h2 id="endTitle"></h2>
-<p id="endText"></p>
-<p id="endRank"></p>
-<button class="primary" onclick="back()">キャラクター選択に戻る</button>
+<div id="game" class="hidden">
+
+<div class="box">
+<h3 id="chapter">第1話 群馬高専</h3>
+<div>T.Y.　Lv.<span id="lv">1</span></div>
+HP <span id="hpText"></span>
+<div class="bar"><div id="hpBar" class="fill hp"></div></div>
+MP <span id="mpText"></span>
+<div class="bar"><div id="mpBar" class="fill mp"></div></div>
+経験値 <span id="exp">0</span>
 </div>
-</section>
+
+<div class="box">
+<h2 id="scene">戦闘開始</h2>
+<div id="storyText"></div>
+<br>
+<div id="enemyArea" class="hidden">
+<div class="enemy" id="enemyName"></div>
+<p id="enemyDesc"></p>
+HP <span id="enemyHp"></span>
+<div class="bar"><div id="enemyBar" class="fill hp"></div></div>
+</div>
+</div>
+
+<div class="box">
+<h3>コマンド</h3>
+<div class="actions" id="commands">
+<button onclick="attack()">通常攻撃</button>
+<button onclick="guard()">防御</button>
+<button class="special" onclick="sleep()">寝落ち</button>
+<button class="special" onclick="favorite()">一番好き</button>
+</div>
+</div>
+
+<div class="box">
+<h3>バトルログ</h3>
+<div id="log"></div>
+</div>
+
+<div class="box hidden" id="result">
+<h2 id="resultTitle">勝利！</h2>
+<p id="resultText"></p>
+<button onclick="next()">次へ進む</button>
+</div>
+
 </div>
 
 <script>
-const girls=[
+const chapters=[
 {
- id:"rena",name:"玲奈",age:24,
- type:"小悪魔系・積極的",
- desc:"からかうのが大好き。距離を縮めるのが上手な女性。",
- image:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=700",
- start:"こんばんは♡ まだ起きてたんだ？実はあなたと話したくて連絡しちゃった。",
- scenes:[
- {
- text:"ねえ、私ってどんな女性に見える？",
- options:[
- ["かわいくて魅力的だと思う", [15,8,0,12],"えへへ、そんなこと言われたら嬉しくなっちゃう♡"],
- ["ちょっと小悪魔っぽい", [8,5,0,8],"正解♪ あなたには少し意地悪したくなるんだよね。"],
- ["まだよく分からない", [0,8,0,0],"じゃあ、これから私のことを知ってね。"]
- ]
- },
- {
- text:"もし今、私があなたの隣に座ったら？",
- options:[
- ["手をつないでみたい", [15,12,0,15],"ふふ……いいよ。手、貸して？♡"],
- ["ゆっくりお話ししたい", [10,15,0,0],"あなたとなら、何時間でも話せそう。"],
- ["少し照れるかも", [8,10,0,5],"あれ？かわいい反応するんだね♡"]
- ]
- },
- {
- text:"今度、二人きりで夜景を見に行かない？",
- options:[
- ["ぜひ行きたい。デートしよう", [18,15,0,12],"やった！素敵な夜にしようね♡"],
- ["どこに行くか相談しよう", [12,15,0,5],"うん！一緒に決めるのも楽しそう。"],
- ["少し考えさせて", [0,5,0,-5],"そっか。返事、待ってるね。"]
- ]
- },
- {
- text:"夜景を見ながら、玲奈があなたの手を握った。",
- options:[
- ["優しく抱きしめる", [18,18,0,18],"……もう少し、このままでいたいな。"],
- ["そっと手を握り返す", [12,18,0,8],"あなたの手、あったかいね♡"],
- ["照れて目をそらす", [5,10,0,-2],"もう、そんなに照れなくてもいいのに♪"]
- ]
- },
- {
- text:"「ねえ、私たちって……恋人になれると思う？」",
- options:[
- ["玲奈と恋人になりたい", [22,20,0,20],"本当に？……嬉しい。私もあなたが好き♡"],
- ["もっと一緒に過ごしてから決めたい", [12,18,0,0],"うん。焦らなくていいよ。"],
- ["今の関係が好き", [0,8,0,-8],"そっか……でも、これからも話そうね。"]
- ]
- }
- ]
+name:"第1話 群馬高専",
+enemy:"U.",
+desc:"能力：かませ犬。追い詰められるほど強くなる。",
+hp:75,power:10,
+story:"校舎が揺れた。\nU.「今日から、この学校は俺のものだ」\n\nT.Y.の前に、強敵が立ちはだかる。",
+win:"U.は吹き飛ばされた。しかし、背後からI.が現れた。"
 },
 {
- id:"misaki",name:"美咲",age:23,
- type:"恥ずかしがり屋・甘えん坊",
- desc:"普段はおとなしいけれど、心を開くと甘えん坊。",
- image:"https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=700",
- start:"あ、こんばんは……！連絡してくれてありがとう。ちょっと緊張しちゃうな。",
- scenes:[
- {
- text:"美咲は少し緊張しているようだ。",
- options:[
- ["ゆっくり話そう", [15,15,0,0],"ありがとう。あなたと話すと安心するな。"],
- ["緊張してる？かわいいね", [12,5,0,8],"えっ……もう、からかわないでよ。"],
- ["何かあった？", [10,18,0,0],"実はちょっと寂しかったんだ。"]
- ]
- },
- {
- text:"「私、あまり自分から誘えないんだ……」",
- options:[
- ["今度は僕から誘うよ", [15,18,0,5],"本当？楽しみにしてるね！"],
- ["美咲から誘ってくれてもいいよ", [8,10,0,5],"が、頑張ってみるね……！"],
- ["無理しなくていいよ", [10,15,0,0],"優しいね。ありがとう。"]
- ]
- },
- {
- text:"「今度、一緒にカフェに行きたいな」",
- options:[
- ["二人で行こう！", [18,18,0,12],"やった……！何を着ていこうかな。"],
- ["甘いものを食べに行こう", [15,10,0,5],"私、ケーキが大好きなの！"],
- ["友達も誘う？", [3,5,0,-5],"そ、そうだね……でも二人でもいいな。"]
- ]
- },
- {
- text:"帰り道、美咲がそっとあなたの袖をつかんだ。",
- options:[
- ["手をつなぐ？と聞く", [18,18,0,15],"……うん。つないでほしいな。"],
- ["優しく微笑む", [12,15,0,5],"えへへ。もう少し一緒にいたいな。"],
- ["気づかないふりをする", [0,0,0,-5],"あ……何でもないよ。"]
- ]
- },
- {
- text:"「実はね、あなたのことが気になってるの」",
- options:[
- ["僕も美咲が好きだよ", [22,20,0,15],"夢みたい……！これからもよろしくね♡"],
- ["ゆっくり仲良くなりたい", [12,18,0,0],"うん！一緒に思い出を作ろうね。"],
- ["友達として好きだよ", [0,10,0,-10],"そっか。でも、伝えられてよかった。"]
- ]
- }
- ]
+name:"第2話 テクニシャン",
+enemy:"I.",
+desc:"能力：一手先。相手の次の行動を読む。",
+hp:100,power:13,
+story:"I.「君の行動はすべて読める」\n\n飛び交う文房具。T.Y.は攻撃を避けられない。",
+win:"眠っている間、I.の先読みは機能しなかった。T.Y.は寝落ちの能力を習得した。"
 },
 {
- id:"riko",name:"莉子",age:25,
- type:"クール系・独占欲強め",
- desc:"普段は冷静。好きな人には少し嫉妬深い一面も。",
- image:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=700",
- start:"こんばんは。こんな時間に連絡するなんて珍しいね。……少し嬉しいけど。",
- scenes:[
- {
- text:"「あなたって、誰にでも優しいの？」",
- options:[
- ["大切な人には特に優しくするよ", [15,15,0,8],"……そう。なら、私も大切な人になりたい。"],
- ["普通だと思う", [5,5,0,0],"ふーん。そうなんだ。"],
- ["莉子には特別だよ", [18,12,0,15],"……そういうことをさらっと言うんだね。"]
- ]
- },
- {
- text:"「最近、他の女性とよく話しているみたいね」",
- options:[
- ["少し嫉妬してる？", [8,0,12,12],"別に。……少しくらいは気になるけど。"],
- ["ただの友達だよ", [12,15,-5,0],"そう。ならいいけど。"],
- ["莉子と話すのが一番楽しい", [18,18,-8,10],"……そういうところ、ずるいね。"]
- ]
- },
- {
- text:"「今度、二人で食事に行かない？」",
- options:[
- ["もちろん。デートしよう", [18,15,0,12],"デート……。悪くない響きね。"],
- ["莉子の好きな店に行こう", [15,18,0,5],"覚えておく。あなたとなら楽しめそう。"],
- ["みんなで行こう", [0,5,8,-8],"……二人がよかったのだけど。"]
- ]
- },
- {
- text:"食事のあと、莉子があなたの肩にもたれかかった。",
- options:[
- ["そっと抱きしめる", [18,20,0,15],"……今だけは、こうしていて。"],
- ["大丈夫？と聞く", [12,18,0,0],"大丈夫。ただ、少し甘えたくなっただけ。"],
- ["冗談を言って笑わせる", [8,10,-3,5],"ふふ。あなたといると調子が狂う。"]
- ]
- },
- {
- text:"「私、あなたを他の人に取られたくないと思ってる」",
- options:[
- ["莉子だけを大切にしたい", [22,20,-5,18],"……ずっと、その言葉を聞きたかった。"],
- ["お互いを信頼しよう", [15,22,-8,0],"そうね。それが一番大事だと思う。"],
- ["束縛は苦手なんだ", [0,8,8,-10],"分かった。少し考えさせて。"]
- ]
- }
- ]
+name:"第3話 ヘドロ",
+enemy:"M.",
+desc:"能力：価値を奪う。触れたものを泥に変える。",
+hp:130,power:16,
+story:"床が黒い泥に変わっていく。\nM.「この学校全部を泥にしてやる」",
+win:"M.を撃破。寝落ちの力が強化された。"
+},
+{
+name:"第4話 能力者",
+enemy:"K.",
+desc:"能力：欠席。存在を認識から消す。",
+hp:160,power:20,
+story:"K.「全員、戦え」\n\n能力者たちが集結する。校舎が崩れ始めた。",
+win:"K.を追い詰めた。T.Y.の能力の正体が明らかになる。"
+},
+{
+name:"最終話 一番好き",
+enemy:"K. 最終形態",
+desc:"能力：存在そのものを消し去る。",
+hp:230,power:25,
+story:"K.「お前はここで消える」\n\nT.Y.「俺、ここが一番好きだから」",
+win:"K.の能力が崩壊した。\n\nT.Y.「もう疲れた。寝る」\n\n翌朝、学校には誰もいなかった。\n机の上には一行だけ残されていた。\n\n『俺は、ここが一番好きだった。』"
 }
 ];
 
-let girl=null;
-let stats={love:20,trust:20,jealousy:0,active:20};
-let step=0;
-let busy=false;
+let stage=0,hp=120,maxHp=120,mp=40,maxMp=40;
+let lv=1,exp=0,enemyHp=0,enemyMax=0;
+let defending=false,invincible=false,busy=false;
 
-const $=id=>document.getElementById(id);
-
-function makeCharacters(){
- $("characters").innerHTML="";
- girls.forEach(g=>{
-  const div=document.createElement("div");
-  div.className="character";
-  div.innerHTML=`
-   <img src="${g.image}" alt="${g.name}">
-   <div class="charinfo">
-    <h3>${g.name}（${g.age}歳）</h3>
-    <div style="color:#d9a8d0;font-size:12px">${g.type}</div>
-    <p>${g.desc}</p>
-    <button class="primary">この人と話す ♡</button>
-   </div>`;
-  div.querySelector("button").onclick=()=>start(g);
-  $("characters").appendChild(div);
- });
+function begin(){
+ document.getElementById("start").classList.add("hidden");
+ document.getElementById("game").classList.remove("hidden");
+ loadStage();
 }
 
-function start(g){
- girl=g;
- stats={love:20,trust:20,jealousy:0,active:20};
- step=0;busy=false;
- $("select").classList.add("hidden");
- $("ending").classList.add("hidden");
- $("game").classList.remove("hidden");
- $("name").textContent=g.name+" ♡";
- $("chat").innerHTML="";
- updateStats();
- addMessage("left",g.start);
- showChoices();
+function loadStage(){
+ const c=chapters[stage];
+ document.getElementById("chapter").textContent=c.name;
+ document.getElementById("scene").textContent="VS "+c.enemy;
+ document.getElementById("storyText").textContent=c.story;
+ document.getElementById("enemyArea").classList.remove("hidden");
+ document.getElementById("enemyName").textContent=c.enemy;
+ document.getElementById("enemyDesc").textContent=c.desc;
+ enemyHp=enemyMax=c.hp;
+ defending=false;invincible=false;
+ document.getElementById("result").classList.add("hidden");
+ document.getElementById("commands").classList.remove("hidden");
+ log("戦闘開始！ "+c.enemy+" が現れた！");
+ update();
 }
 
-function addMessage(type,text){
- const d=document.createElement("div");
- d.className="msg "+type;
- d.textContent=text;
- $("chat").appendChild(d);
- $("chat").scrollTop=$("chat").scrollHeight;
+function log(t){
+ let l=document.getElementById("log");
+ let p=document.createElement("p");
+ p.textContent=t;
+ l.appendChild(p);
+ l.scrollTop=l.scrollHeight;
 }
 
-function updateStats(){
- const names=[
-  ["love","好感度"],["trust","信頼度"],
-  ["jealousy","嫉妬度"],["active","積極性"]
- ];
- $("stats").innerHTML=names.map(([key,label])=>`
- <div class="stat">${label}：${stats[key]}
- <div class="track"><div class="fill"
- style="width:${stats[key]}%"></div></div>
- </div>`).join("");
-
- let relation="知り合い";
- if(stats.love>=85&&stats.trust>=65)relation="特別な関係 ♡";
- else if(stats.love>=65)relation="かなり親しい";
- else if(stats.love>=40)relation="友達以上？";
- $("relationship").textContent="現在の関係："+relation;
+function update(){
+ document.getElementById("hpText").textContent=hp+"/"+maxHp;
+ document.getElementById("mpText").textContent=mp+"/"+maxMp;
+ document.getElementById("hpBar").style.width=hp/maxHp*100+"%";
+ document.getElementById("mpBar").style.width=mp/maxMp*100+"%";
+ document.getElementById("enemyHp").textContent=enemyHp+"/"+enemyMax;
+ document.getElementById("enemyBar").style.width=enemyHp/enemyMax*100+"%";
+ document.getElementById("lv").textContent=lv;
+ document.getElementById("exp").textContent=exp;
 }
 
-function showChoices(){
- const scene=girl.scenes[step];
- $("choices").innerHTML="";
- const title=document.createElement("div");
- title.className="sub";
- title.textContent="どう返事する？";
- $("choices").appendChild(title);
-
- scene.options.forEach((opt,i)=>{
-  const b=document.createElement("button");
-  b.className="choice";
-  b.textContent=opt[0];
-  b.onclick=()=>choose(i);
-  $("choices").appendChild(b);
- });
-}
-
-function choose(i){
- if(busy)return;
+function disableActions(){
  busy=true;
- const opt=girl.scenes[step].options[i];
+ document.querySelectorAll("#commands button").forEach(b=>b.disabled=true);
+}
+function enableActions(){
+ busy=false;
+ document.querySelectorAll("#commands button").forEach(b=>b.disabled=false);
+}
+function wait(ms){return new Promise(r=>setTimeout(r,ms))}
 
- $("choices").querySelectorAll("button").forEach(b=>b.disabled=true);
- addMessage("right",opt[0]);
-
- const keys=["love","trust","jealousy","active"];
- keys.forEach((k,j)=>{
-  stats[k]=Math.max(0,Math.min(100,stats[k]+opt[1][j]));
- });
- updateStats();
-
- const typing=document.createElement("div");
- typing.className="typing";
- typing.textContent=girl.name+" が入力中...";
- $("chat").appendChild(typing);
- $("chat").scrollTop=$("chat").scrollHeight;
-
- const delay=1200+Math.random()*900;
- setTimeout(()=>{
-  typing.remove();
-  addMessage("left",opt[2]);
-  step++;
-  busy=false;
-
-  if(step<girl.scenes.length){
-   setTimeout(()=>{
-    if(step<girl.scenes.length){
-     addMessage("left",girl.scenes[step].text);
-     showChoices();
-    }
-   },700);
-  }else{
-   setTimeout(ending,1000);
-  }
- },delay);
+async function attack(){
+ if(busy)return;
+ disableActions();
+ let damage=20+lv*3;
+ log("T.Y.の攻撃！");
+ await wait(500);
+ enemyHp=Math.max(0,enemyHp-damage);
+ log(damage+" ダメージ！");
+ update();
+ await wait(650);
+ await enemyTurn();
 }
 
-function ending(){
- $("game").classList.add("hidden");
- $("ending").classList.remove("hidden");
+async function guard(){
+ if(busy)return;
+ disableActions();
+ defending=true;
+ log("T.Y.は身構えた！");
+ await wait(500);
+ await enemyTurn();
+}
 
- let title,text,rank;
- if(stats.love>=80&&stats.trust>=70){
-  title="♡ 恋人エンド ♡";
-  text=girl.name+"「これからは恋人として、あなたの隣にいさせてね。二人でたくさんの思い出を作ろう……♡」";
-  rank="最高の結末";
- }else if(stats.love>=60){
-  title="♡ 両想いの予感 ♡";
-  text=girl.name+"「あなたといる時間が好き。また二人で会いたいな。次はもっと素敵な時間にしようね。」";
-  rank="親密な関係";
- }else if(stats.trust>=50){
-  title="🌸 信頼エンド";
-  text=girl.name+"「あなたと話せてよかった。これからも大切な友達でいてね。」";
-  rank="大切な友人";
- }else{
-  title="🌙 すれ違いエンド";
-  text=girl.name+"「今日はありがとう。またいつか話せたらいいね。」";
-  rank="まだこれから";
+async function sleep(){
+ if(busy||mp<10||stage===0)return;
+ disableActions();
+ mp-=10;
+ invincible=true;
+ hp=Math.min(maxHp,hp+20);
+ log("T.Y.「……寝る」");
+ update();
+ await wait(1000);
+ log("T.Y.は深い眠りに落ちた……");
+ await wait(700);
+ log("寝落ち発動！次の攻撃を無効化！");
+ await enemyTurn();
+}
+
+async function favorite(){
+ if(busy||mp<20||stage<3)return;
+ disableActions();
+ mp-=20;
+ let damage=stage===4?95:65;
+ log("T.Y.「ここが一番好き」");
+ await wait(800);
+ log("『一番好き』発動！");
+ await wait(500);
+ enemyHp=Math.max(0,enemyHp-damage);
+ log(damage+" ダメージ！");
+ update();
+ await wait(700);
+ await enemyTurn();
+}
+
+async function enemyTurn(){
+ if(enemyHp<=0){win();return}
+ await wait(400);
+ log(chapters[stage].enemy+"の攻撃！");
+ await wait(650);
+
+ let damage=chapters[stage].power+Math.floor(Math.random()*6);
+ if(stage===0&&enemyHp<enemyMax/2)damage+=8;
+
+ if(invincible){
+  damage=0;invincible=false;
+  log("攻撃が無効化された！");
+ }else if(defending){
+  damage=Math.ceil(damage/2);
+  defending=false;
+  log("防御成功！ダメージ半減！");
  }
+ if(damage>0){
+  hp=Math.max(0,hp-damage);
+  log("T.Y.は"+damage+"ダメージを受けた！");
+ }
+ update();
+ await wait(500);
 
- $("endTitle").textContent=title;
- $("endText").textContent=text;
- $("endRank").textContent=rank+
- "\n好感度："+stats.love+
- " / 信頼度："+stats.trust+
- " / 嫉妬度："+stats.jealousy+
- " / 積極性："+stats.active;
+ if(hp<=0){
+  defeat();
+  return;
+ }
+ enableActions();
 }
 
-function back(){
- $("game").classList.add("hidden");
- $("ending").classList.add("hidden");
- $("select").classList.remove("hidden");
+async function win(){
+ busy=true;
+ document.getElementById("commands").classList.add("hidden");
+ log("敵を撃破した！");
+ await wait(700);
+ exp+=40+stage*20;
+ if(exp>=60){
+  exp=0;lv++;maxHp+=15;maxMp+=5;
+  hp=Math.min(maxHp,hp+30);
+  mp=Math.min(maxMp,mp+15);
+  log("レベルアップ！ Lv."+lv);
+ }
+ hp=Math.min(maxHp,hp+20);
+ mp=Math.min(maxMp,mp+10);
+ update();
+ document.getElementById("resultTitle").textContent="勝利！";
+ document.getElementById("resultText").textContent=chapters[stage].win;
+ document.getElementById("result").classList.remove("hidden");
+ document.querySelector("#result button").textContent=
+ stage===4?"タイトルへ戻る":"次の章へ進む";
 }
 
-makeCharacters();
+function defeat(){
+ busy=true;
+ document.getElementById("commands").classList.add("hidden");
+ document.getElementById("resultTitle").textContent="敗北……";
+ document.getElementById("resultText").textContent="T.Y.は倒れてしまった。もう一度挑戦しよう。";
+ document.getElementById("result").classList.remove("hidden");
+ document.querySelector("#result button").textContent="再挑戦";
+}
+
+function next(){
+ if(hp<=0){
+  hp=maxHp;mp=maxMp;loadStage();return;
+ }
+ if(stage===4){
+  location.reload();return;
+ }
+ stage++;
+ hp=Math.min(maxHp,hp+25);
+ mp=Math.min(maxMp,mp+15);
+ loadStage();
+}
 </script>
 </body>
 </html>
