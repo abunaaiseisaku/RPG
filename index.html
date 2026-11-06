@@ -291,10 +291,6 @@ onclick="showTitle()">
 <div class="small">PLAYER</div>
 <div class="status-name" id="playerName"></div>
 
-<p class="small">
-Lv.<span id="level">1</span>
-</p>
-
 <p>HP <span id="hpText"></span></p>
 <div class="bar">
 <div id="hpBar" class="fill hp"></div>
@@ -307,10 +303,6 @@ Lv.<span id="level">1</span>
 
 <p class="small">
 攻撃力：<span id="attackPower">0</span>
-</p>
-
-<p class="small">
-経験値：<span id="exp">0</span>
 </p>
 
 <p class="small">
@@ -409,7 +401,7 @@ onclick="nextStage()">
 // 基本設定
 // ==================================
 
-const SAVE_KEY = "ichibanSukiSaveV1";
+const SAVE_KEY = "ichibanSukiSaveV2";
 const MP_RECOVERY_PER_TURN = 5;
 
 let selected=null;
@@ -418,9 +410,6 @@ let stageIndex=0;
 let hp=0,maxHp=0;
 let mp=0,maxMp=0;
 let attackPower=0;
-
-let level=1;
-let exp=0;
 
 let enemyHp=0;
 let enemyMaxHp=0;
@@ -437,6 +426,9 @@ let battleStarted=false;
 
 let resultState=null;
 let logEntries=[];
+
+// 戦闘開始時のステータスを保存
+let battleStartStatus=null;
 
 // ==================================
 // キャラクターデータ
@@ -498,20 +490,6 @@ const characters = [
  cost:15,
  desc:"敵をヘドロで包み、攻撃力を低下させる。",
  detail:"弱体化型"
-},
-
-{
- id:"K",
- name:"黒木",
- symbol:"🌑",
- type:"トリッキー型",
- hp:95,
- mp:85,
- attack:19,
- skill:"欠席",
- cost:20,
- desc:"自分の存在を消し、次の攻撃を無効化する。",
- detail:"特殊防御型"
 }
 
 ];
@@ -578,38 +556,38 @@ const stages = [
 {
  chapter:"第4話 能力者",
  title:"欠席と出席",
- enemy:"黒木",
+ enemy:"黒田",
  desc:"能力：欠席。存在を認識から外す。",
  hp:175,
  power:22,
 
  story:
-"黒木「全員、戦え」\n\n"+
+"黒田「全員、戦え」\n\n"+
 "能力者たちが集結する。\n\n"+
 "校舎が崩れ始めた。\n\n"+
 "主人公は自分の能力の正体に近づいていた。",
 
  win:
-"黒木を追い詰めた。しかし、黒木は最後の力を解放する。"
+"黒田を追い詰めた。しかし、黒田は最後の力を解放する。"
 },
 
 {
  chapter:"最終話 一番好き",
  title:"最後の戦い",
- enemy:"黒木 最終形態",
+ enemy:"黒田 最終形態",
  desc:"能力：欠席。存在そのものを消し去る。",
  hp:250,
  power:28,
 
  story:
 "校舎は崩壊していた。\n\n"+
-"黒木「お前はここで消える」\n\n"+
+"黒田「お前はここで消える」\n\n"+
 "主人公は校舎を見渡した。\n\n"+
 "「俺、ここが一番好きだから」\n\n"+
 "最後の戦いが始まる。",
 
  win:
-"黒木の能力が崩壊した。\n\n"+
+"黒田の能力が崩壊した。\n\n"+
 "戦いは終わった。\n\n"+
 "翌朝、学校には誰もいなかった。\n\n"+
 "机の上には一行だけ残されていた。\n\n"+
@@ -650,7 +628,7 @@ function makeSaveData(){
 
  return {
 
-  version:1,
+  version:2,
 
   selectedId:selected.id,
   stageIndex,
@@ -659,14 +637,10 @@ function makeSaveData(){
   mp,maxMp,
   attackPower,
 
-  level,
-  exp,
-
   enemyHp,
   enemyMaxHp,
   enemyPower,
 
-  busy:false,
   guarding,
   nullify,
   predicted,
@@ -676,6 +650,8 @@ function makeSaveData(){
   battleStarted,
 
   resultState,
+
+  battleStartStatus,
 
   logEntries,
 
@@ -732,9 +708,7 @@ function manualSave(){
   return;
  }
 
- if(saveGame(true)){
-  // セーブ成功
- }
+ saveGame(true);
 
 }
 
@@ -809,9 +783,6 @@ function continueGame(){
 
  attackPower=data.attackPower;
 
- level=data.level;
- exp=data.exp;
-
  enemyHp=data.enemyHp;
  enemyMaxHp=data.enemyMaxHp;
  enemyPower=data.enemyPower;
@@ -825,6 +796,8 @@ function continueGame(){
 
  battleStarted=!!data.battleStarted;
  resultState=data.resultState||null;
+
+ battleStartStatus=data.battleStartStatus||null;
 
  logEntries=Array.isArray(data.logEntries)
   ?data.logEntries:[ ];
@@ -1000,8 +973,6 @@ function startGame(){
 
  attackPower=selected.attack;
 
- level=1;
- exp=0;
  stageIndex=0;
 
  enemyHp=0;
@@ -1018,6 +989,7 @@ function startGame(){
  battleStarted=false;
  resultState=null;
  logEntries=[];
+ battleStartStatus=null;
 
  document.getElementById("selectScreen").classList.add("hidden");
  document.getElementById("gameScreen").classList.remove("hidden");
@@ -1048,9 +1020,6 @@ function updateStatus(){
 
  document.getElementById("mpBar").style.width=
  Math.max(0,mp/maxMp*100)+"%";
-
- document.getElementById("level").textContent=level;
- document.getElementById("exp").textContent=exp;
 
  document.getElementById("attackPower").textContent=
  attackPower;
@@ -1139,6 +1108,7 @@ function loadStage(){
 
  battleStarted=false;
  resultState=null;
+ battleStartStatus=null;
 
  guarding=false;
  nullify=false;
@@ -1192,6 +1162,23 @@ function beginBattle(){
  battleStarted=true;
  resultState=null;
 
+ // 戦闘開始時のステータスを記録する
+ // 敗北後はこの状態に戻して再挑戦する
+ battleStartStatus={
+  hp:hp,
+  maxHp:maxHp,
+  mp:mp,
+  maxMp:maxMp,
+  attackPower:attackPower
+ };
+
+ guarding=false;
+ nullify=false;
+ predicted=false;
+ enemyWeakened=false;
+ favoriteTurns=0;
+ playerSealed=false;
+
  document.getElementById("enemyName").textContent=s.enemy;
  document.getElementById("enemyDesc").textContent=s.desc;
 
@@ -1199,6 +1186,7 @@ function beginBattle(){
  document.getElementById("battleCommands").classList.remove("hidden");
 
  updateEnemy();
+ updateStatus();
 
  writeLog("―― BATTLE START ――","system-log");
  writeLog(s.enemy+"が現れた！","bad");
@@ -1284,7 +1272,7 @@ async function playerAction(type){
 
   playerSealed=false;
 
-  writeLog("黒木の「欠席」により、行動できない！","bad");
+  writeLog("黒田の「欠席」により、行動できない！","bad");
 
  }else{
 
@@ -1483,17 +1471,6 @@ async function useSkill(){
 
    break;
 
-  case "K":
-
-   writeLog("黒木「俺はここにいない」");
-   await delay(800);
-
-   nullify=true;
-
-   writeLog("欠席発動！次の攻撃を無効化！","purple");
-
-   break;
-
  }
 
 }
@@ -1585,10 +1562,10 @@ async function enemyTurn(){
 
    if(Math.random()<0.35){
 
-    writeLog("黒木「欠席」");
+    writeLog("黒田「欠席」");
     playerSealed=true;
 
-    writeLog("黒木の能力で次の行動が封じられる！","purple");
+    writeLog("黒田の能力で次の行動が封じられる！","purple");
 
    }
 
@@ -1598,7 +1575,7 @@ async function enemyTurn(){
 
    if(Math.random()<0.45){
 
-    writeLog("黒木「強制出席！」");
+    writeLog("黒田「強制出席！」");
     damage=Math.floor(damage*1.8);
 
    }
@@ -1700,26 +1677,7 @@ async function victory(){
 
  await delay(700);
 
- exp+=40+stageIndex*20;
-
- if(exp>=60){
-
-  exp-=60;
-
-  level++;
-
-  maxHp+=15;
-  maxMp+=8;
-  attackPower+=5;
-
-  hp=Math.min(maxHp,hp+30);
-  mp=Math.min(maxMp,mp+20);
-
-  writeLog("レベルアップ！","good");
-  writeLog("Lv."+level+"になった！","good");
-
- }
-
+ // 勝利後のHP回復
  hp=Math.min(maxHp,hp+20);
 
  updateStatus();
@@ -1735,11 +1693,6 @@ async function victory(){
 }
 
 function showVictoryResult(addLog){
-
- if(addLog){
-
-  // 勝利メッセージはログに追加済み
- }
 
  document.getElementById("resultTitle").textContent="勝利！";
 
@@ -1762,7 +1715,7 @@ function showVictoryResult(addLog){
 
 function defeat(){
 
- setBusy(true);
+ setBusy(false);
  battleStarted=false;
  resultState="lose";
 
@@ -1770,6 +1723,7 @@ function defeat(){
 
  showDefeatResult();
 
+ // 敗北状態と戦闘開始時のステータスを保存
  autoSave();
 
 }
@@ -1779,11 +1733,80 @@ function showDefeatResult(){
  document.getElementById("resultTitle").textContent="敗北……";
 
  document.getElementById("resultText").textContent=
- selected.name+"は力尽きた。\n\n再挑戦してみよう。";
+ selected.name+"は力尽きた。\n\n"+
+ "戦闘開始時のステータスに戻って再挑戦できる。";
 
  document.getElementById("resultPanel").classList.remove("hidden");
 
  document.getElementById("nextButton").textContent="再挑戦";
+
+}
+
+// ==================================
+// 再挑戦
+// ==================================
+
+function retryBattle(){
+
+ if(!battleStartStatus){
+
+  // 万が一、開始時データがない場合はキャラクター初期値を使用
+  battleStartStatus={
+   hp:selected.hp,
+   maxHp:selected.hp,
+   mp:selected.mp,
+   maxMp:selected.mp,
+   attackPower:selected.attack
+  };
+
+ }
+
+ // 戦闘開始時のステータスを復元
+ hp=battleStartStatus.hp;
+ maxHp=battleStartStatus.maxHp;
+ mp=battleStartStatus.mp;
+ maxMp=battleStartStatus.maxMp;
+ attackPower=battleStartStatus.attackPower;
+
+ // 敵も初期状態に戻す
+ const s=stages[stageIndex];
+
+ enemyHp=s.hp;
+ enemyMaxHp=s.hp;
+ enemyPower=s.power;
+
+ // 戦闘状態を初期化
+ guarding=false;
+ nullify=false;
+ predicted=false;
+ enemyWeakened=false;
+ favoriteTurns=0;
+ playerSealed=false;
+
+ battleStarted=true;
+ resultState=null;
+
+ busy=false;
+
+ // 画面を戦闘状態に戻す
+ document.getElementById("resultPanel").classList.add("hidden");
+ document.getElementById("storyCommands").classList.add("hidden");
+ document.getElementById("battleCommands").classList.remove("hidden");
+
+ document.getElementById("enemyName").textContent=s.enemy;
+ document.getElementById("enemyDesc").textContent=s.desc;
+
+ setBusy(false);
+
+ updateStatus();
+ updateEnemy();
+
+ writeLog("―― 再挑戦 ――","system-log");
+ writeLog("戦闘開始時のステータスに戻った！","good");
+ writeLog("HP・MP・攻撃力が戦闘開始時の状態に復元された。");
+ writeLog(s.enemy+"が再び現れた！","bad");
+
+ autoSave();
 
 }
 
@@ -1793,18 +1816,15 @@ function showDefeatResult(){
 
 function nextStage(){
 
- if(resultState==="lose"||hp<=0){
+ // 敗北後は同じ戦闘に再挑戦
+ if(resultState==="lose"){
 
-  hp=maxHp;
-  mp=maxMp;
-
-  resultState=null;
-
-  loadStage();
-
+  retryBattle();
   return;
 
  }
+
+ if(resultState!=="win")return;
 
  if(stageIndex===stages.length-1){
 
@@ -1819,6 +1839,7 @@ function nextStage(){
 
  stageIndex++;
 
+ // 次の章へ進む際のHP回復
  hp=Math.min(maxHp,hp+25);
 
  loadStage();
