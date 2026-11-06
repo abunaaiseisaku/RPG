@@ -5,7 +5,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>一番好き RPG</title>
-
 <style>
 *{box-sizing:border-box}
 body{
@@ -62,9 +61,7 @@ button.skill{background:#7955a8}
 .mpbar span{background:#6bb9ef}
 .enemybar span{background:#e66b6b}
 .actions{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:7px;
+  display:grid;grid-template-columns:repeat(2,1fr);gap:7px;
 }
 .actions button{margin:0}
 .skill-info{
@@ -83,6 +80,23 @@ button.skill{background:#7955a8}
 .log-system{color:#b6c3d9}
 #storyText{line-height:1.9;white-space:pre-wrap}
 #resultTitle{font-size:24px;color:#f6d477}
+#endingText{
+  line-height:2.1;white-space:pre-wrap;
+  font-size:15px;min-height:200px;
+}
+.ending-note{
+  margin:24px auto;padding:22px 12px;
+  max-width:420px;background:#eee8d8;color:#252525;
+  font-family:serif;font-size:20px;line-height:2;
+  transform:rotate(-1deg);
+  box-shadow:0 4px 12px #0006;
+}
+.field-status{
+  display:none;background:#453b65;border:1px solid #9a80d1;
+  color:#e6d9ff;border-radius:8px;padding:9px;
+  margin-top:10px;font-size:13px;text-align:center;
+}
+.field-status.active{display:block}
 footer{text-align:center;color:#718096;font-size:12px;margin:25px}
 @media(max-width:480px){
   body{padding:9px}
@@ -101,7 +115,6 @@ footer{text-align:center;color:#718096;font-size:12px;margin:25px}
   <p class="center small">― 眠り続ける少年と、能力者たちの物語 ―</p>
 </header>
 
-<!-- タイトル -->
 <section id="titleScreen" class="panel center">
   <h2>一番好き RPG</h2>
   <p>キャラクターを選び、全5章を攻略しよう。</p>
@@ -111,20 +124,16 @@ footer{text-align:center;color:#718096;font-size:12px;margin:25px}
   <p id="saveMessage" class="small"></p>
 </section>
 
-<!-- キャラクター選択 -->
 <section id="selectScreen" class="panel hidden">
   <h2>プレイヤー選択</h2>
   <p>操作するキャラクターを1人選んでください。</p>
   <div id="characterList" class="character-grid"></div>
   <div class="center">
-    <button id="startButton" onclick="startGame()" disabled>
-      このキャラクターで始める
-    </button>
+    <button id="startButton" onclick="startGame()" disabled>このキャラクターで始める</button>
     <button class="sub" onclick="showTitle()">戻る</button>
   </div>
 </section>
 
-<!-- ストーリー -->
 <section id="storyScreen" class="panel hidden">
   <h2 id="storyTitle"></h2>
   <div id="storyText"></div>
@@ -133,12 +142,9 @@ footer{text-align:center;color:#718096;font-size:12px;margin:25px}
   </div>
 </section>
 
-<!-- 戦闘 -->
 <section id="battleScreen" class="hidden">
-
   <div class="panel">
     <h2 id="stageTitle"></h2>
-
     <div class="status-grid">
       <div class="status">
         <strong id="playerName"></strong>
@@ -148,7 +154,6 @@ footer{text-align:center;color:#718096;font-size:12px;margin:25px}
         <div class="bar mpbar"><span id="playerMpBar"></span></div>
         <div>攻撃力：<span id="playerAttack"></span></div>
       </div>
-
       <div class="status">
         <strong id="enemyName"></strong>
         <div>HP：<span id="enemyHpText"></span></div>
@@ -157,17 +162,16 @@ footer{text-align:center;color:#718096;font-size:12px;margin:25px}
         <div class="small" id="enemyAbility"></div>
       </div>
     </div>
+    <div id="fieldStatus" class="field-status"></div>
   </div>
 
   <div class="panel">
     <h2>行動選択</h2>
     <div class="actions">
-      <button onclick="playerAction('attack')">通常攻撃</button>
-      <button onclick="playerAction('defend')">防御</button>
-      <button class="skill" id="skillButton1"
-        onclick="playerAction('skill1')"></button>
-      <button class="skill" id="skillButton2"
-        onclick="playerAction('skill2')"></button>
+      <button id="attackButton" onclick="playerAction('attack')">通常攻撃</button>
+      <button id="defendButton" onclick="playerAction('defend')">防御</button>
+      <button class="skill" id="skillButton1" onclick="playerAction('skill1')"></button>
+      <button class="skill" id="skillButton2" onclick="playerAction('skill2')"></button>
     </div>
     <div id="skillDescription" class="skill-info"></div>
     <p class="small">ターン終了時にMPが5回復します。</p>
@@ -184,12 +188,20 @@ footer{text-align:center;color:#718096;font-size:12px;margin:25px}
   </div>
 </section>
 
-<!-- 結果 -->
 <section id="resultScreen" class="panel center hidden">
   <h2 id="resultTitle"></h2>
   <p id="resultText" style="white-space:pre-wrap;line-height:1.8"></p>
   <button id="nextButton" onclick="nextStage()">次へ</button>
   <button class="sub" onclick="manualSave()">セーブ</button>
+</section>
+
+<section id="endingScreen" class="panel center hidden">
+  <h2 id="endingTitle">最終章　エンディング</h2>
+  <div id="endingText"></div>
+  <div id="endingNote" class="ending-note hidden">
+    俺は、ここが一番好きだった。
+  </div>
+  <button id="endingButton" onclick="endingNext()">次へ</button>
 </section>
 
 <footer>一番好き RPG</footer>
@@ -198,176 +210,77 @@ footer{text-align:center;color:#718096;font-size:12px;margin:25px}
 <script>
 "use strict";
 
-/* =========================================
-   基本設定
-========================================= */
+const SAVE_KEY="ichibanSukiSaveV9";
 
-const SAVE_KEY = "ichibanSukiSaveV5";
+let selectedCharacter=null;
+let player=null;
+let currentStage=0;
+let currentEnemy=null;
+let enemyIndex=0;
+let battleStartStatus=null;
+let busy=false;
+let defending=false;
+let gameState="title";
+let fieldEffect=null;
+let endingStep=0;
 
-let selectedCharacter = null;
-let player = null;
-let currentStage = 0;
-let currentEnemy = null;
-let enemyIndex = 0;
-let battleStartStatus = null;
-
-let busy = false;
-let defending = false;
-let gameState = "title";
-
-/* =========================================
-   キャラクター設定
-========================================= */
-
-const characters = [
-  {
-    id:"takase",
-    name:"高瀬 陽之助",
-    description:"眠ることが大好きな少年。",
-    abilityText:"寝落ち / 一番好き",
-    maxHp:150,
-    maxMp:60,
-    attackPower:20,
-    skills:[
-      {
-        name:"寝落ち",
-        cost:15,
-        description:"眠りに落ち、自分に向けられた次の攻撃を無効化する。",
-        effect:"sleep"
-      },
-      {
-        name:"一番好き",
-        cost:25,
-        description:"周囲の空間を味方にして大ダメージを与える。",
-        effect:"favorite"
-      }
-    ]
-  },
-
-  {
-    id:"uemura",
-    name:"上村",
-    description:"追い詰められるほど強くなる能力者。",
-    abilityText:"かませ犬 / 逆転の拳",
-    maxHp:170,
-    maxMp:45,
-    attackPower:23,
-    skills:[
-      {
-        name:"かませ犬",
-        cost:15,
-        description:"追い詰められた力を解放し、強烈な一撃を与える。",
-        effect:"comeback"
-      },
-      {
-        name:"逆転の拳",
-        cost:20,
-        description:"残りHPが少ないほど威力が上がる。",
-        effect:"lastPunch"
-      }
-    ]
-  },
-
-  {
-    id:"imemura",
-    name:"今村",
-    description:"物体の役割を借り、相手の一手先を読む。",
-    abilityText:"それ、借りるね / 一手先",
-    maxHp:125,
-    maxMp:80,
-    attackPower:18,
-    skills:[
-      {
-        name:"それ、借りるね",
-        cost:20,
-        description:"敵の力を借りて攻撃し、敵の攻撃力を下げる。",
-        effect:"borrow"
-      },
-      {
-        name:"一手先",
-        cost:15,
-        description:"敵の次の行動を読み、次の攻撃を回避する。",
-        effect:"foresight"
-      }
-    ]
-  },
-
-  {
-    id:"matsuura",
-    name:"松浦",
-    description:"触れたものの価値を奪い、すべてを沈める。",
-    abilityText:"価値を奪う / 沈む",
-    maxHp:145,
-    maxMp:65,
-    attackPower:21,
-    skills:[
-      {
-        name:"価値を奪う",
-        cost:20,
-        description:"敵の力を奪い、攻撃力を下げる。",
-        effect:"value"
-      },
-      {
-        name:"沈む",
-        cost:25,
-        description:"敵をヘドロに沈め、大ダメージを与える。",
-        effect:"sink"
-      }
-    ]
-  }
+const characters=[
+{
+ id:"takase",name:"高瀬 陽之助",
+ description:"眠ることが大好きな少年。",
+ abilityText:"寝落ち / 一番好き",
+ maxHp:185,maxMp:60,attackPower:23,
+ skills:[
+  {name:"寝落ち",cost:15,description:"眠りに落ち、自分に向けられた次の攻撃を無効化する。",effect:"sleep"},
+  {name:"一番好き",cost:25,description:"3ターンの間、自分の攻撃力を上げ、敵の攻撃力を下げる。",effect:"favorite"}
+ ]
+},
+{
+ id:"uemura",name:"上村",
+ description:"追い詰められるほど強くなる能力者。",
+ abilityText:"かませ犬 / 逆転の拳",
+ maxHp:120,maxMp:45,attackPower:14,
+ skills:[
+  {name:"かませ犬",cost:15,description:"追い詰められた力を解放し、強烈な一撃を与える。",effect:"comeback"},
+  {name:"逆転の拳",cost:20,description:"残りHPが少ないほど威力が上がる。",effect:"lastPunch"}
+ ]
+},
+{
+ id:"imemura",name:"今村",
+ description:"物体の役割を借り、相手の一手先を読む。",
+ abilityText:"それ、借りるね / 一手先",
+ maxHp:145,maxMp:80,attackPower:17,
+ skills:[
+  {name:"それ、借りるね",cost:20,description:"敵の力を借りて攻撃し、敵の攻撃力を下げる。",effect:"borrow"},
+  {name:"一手先",cost:15,description:"敵の次の行動を読み、次の攻撃を回避する。",effect:"foresight"}
+ ]
+},
+{
+ id:"matsuura",name:"松浦",
+ description:"触れたものの価値を奪い、すべてを沈める。",
+ abilityText:"価値を奪う / 沈む",
+ maxHp:165,maxMp:65,attackPower:20,
+ skills:[
+  {name:"価値を奪う",cost:20,description:"敵の力を奪い、攻撃力を下げる。",effect:"value"},
+  {name:"沈む",cost:25,description:"敵をヘドロに沈め、大ダメージを与える。",effect:"sink"}
+ ]
+}
 ];
 
-/* =========================================
-   敵設定
-========================================= */
-
-const enemyData = {
-  takase:{
-    name:"高瀬 陽之助",
-    maxHp:150,
-    attackPower:20,
-    ability:"寝落ち / 一番好き"
-  },
-
-  uemura:{
-    name:"上村",
-    maxHp:120,
-    attackPower:17,
-    ability:"かませ犬"
-  },
-
-  imemura:{
-    name:"今村",
-    maxHp:145,
-    attackPower:19,
-    ability:"それ、借りるね / 一手先"
-  },
-
-  matsuura:{
-    name:"松浦",
-    maxHp:165,
-    attackPower:21,
-    ability:"価値を奪う / 沈む"
-  },
-
-  kurota:{
-    name:"黒田",
-    maxHp:240,
-    attackPower:25,
-    ability:"欠席 / 出席"
-  }
+// 弱い順：上村 ＜ 今村 ＜ 松浦 ＜ 高瀬 ＜ 黒田
+const enemyData={
+ uemura:{name:"上村",maxHp:120,attackPower:14,ability:"かませ犬 / 逆転の拳"},
+ imemura:{name:"今村",maxHp:145,attackPower:17,ability:"それ、借りるね / 一手先"},
+ matsuura:{name:"松浦",maxHp:165,attackPower:20,ability:"価値を奪う / 沈む"},
+ takase:{name:"高瀬 陽之助",maxHp:185,attackPower:23,ability:"寝落ち / 一番好き"},
+ kurota:{name:"黒田",maxHp:210,attackPower:26,ability:"欠席 / 出席"}
 };
 
-/* =========================================
-   章ごとの敵設定
-========================================= */
-
-const stages = [
-  {
-    title:"第1話　始まり",
-    enemies:["uemura"],
-    story:
-`ある学校に、能力者がいるという噂があった。
+const stages=[
+{
+ title:"第1話　始まり",
+ enemies:["uemura"],
+ story:`ある学校に、能力者がいるという噂があった。
 
 上村が学校を支配しようと動き出す。
 その前に立ちはだかるのは、もう一人の能力者。
@@ -375,39 +288,33 @@ const stages = [
 「今日から、ここは俺のものだ」
 
 戦いが始まる。`
-  },
-
-  {
-    title:"第2話　テクニシャン",
-    enemies:["imemura"],
-    story:
-`次に現れたのは今村。
+},
+{
+ title:"第2話　テクニシャン",
+ enemies:["imemura"],
+ story:`次に現れたのは今村。
 
 物体の役割を借りる能力と、相手の一手先を読む能力を持つ。
 
 「君の行動は全部読めている」
 
 簡単には勝てない相手だ。`
-  },
-
-  {
-    title:"第3話　ヘドロ",
-    enemies:["matsuura"],
-    story:
-`松浦が現れた。
+},
+{
+ title:"第3話　ヘドロ",
+ enemies:["matsuura"],
+ story:`松浦が現れた。
 
 触れたものの価値を奪い、すべてを泥に変える。
 
 「沈め」
 
 黒いヘドロが広がり、戦場を覆っていく。`
-  },
-
-  {
-    title:"第4話　能力者",
-    enemies:["uemura","imemura","matsuura"],
-    story:
-`能力者たちが集まり、校舎全体が戦場になった。
+},
+{
+ title:"第4話　能力者",
+ enemies:["uemura","imemura","matsuura"],
+ story:`能力者たちが集まり、校舎全体が戦場になった。
 
 上村、今村、松浦。
 
@@ -416,1010 +323,841 @@ const stages = [
 「全員、戦え」
 
 次々と戦いが始まる。`
-  },
-
-  {
-    title:"最終話　一番好き",
-    enemies:["kurota"],
-    story:
-`校舎は崩壊し、能力者たちは倒れていた。
+},
+{
+ title:"最終話　一番好き",
+ enemies:["kurota"],
+ story:`校舎は崩壊し、能力者たちは倒れていた。
 
 最後に残ったのは黒田。
 
 「お前を消してやる」
 
 すべてを終わらせる最後の戦いが始まる。`
-  }
+}
 ];
 
-/* =========================================
-   プレイヤーに応じた敵の入れ替え
-========================================= */
-
 function getStageEnemies(stageIndex){
-  const original=stages[stageIndex].enemies;
-
-  return original.map(enemyId=>{
-    if(enemyId===player.id){
-      return "takase";
-    }
-    return enemyId;
-  });
+ return stages[stageIndex].enemies.map(id=>id===player.id?"takase":id);
 }
-
-/* =========================================
-   ★今回追加：あらすじの名前を入れ替える
-
-   選択したキャラクターが敵として登場する章では、
-   あらすじの名前も高瀬に置き換える。
-
-   例：
-   上村を選択 → 上村の名前を高瀬に変更
-   今村を選択 → 今村の名前を高瀬に変更
-   松浦を選択 → 松浦の名前を高瀬に変更
-========================================= */
 
 function getStageStory(stageIndex){
-
-  let story=stages[stageIndex].story;
-
-  if(!player){
-    return story;
-  }
-
-  const replacementMap={
-    uemura:"上村",
-    imemura:"今村",
-    matsuura:"松浦"
-  };
-
-  const targetName=replacementMap[player.id];
-
-  if(targetName){
-    const enemies=stages[stageIndex].enemies;
-
-    if(enemies.includes(player.id)){
-      story=story.replaceAll(targetName,"高瀬");
-    }
-  }
-
-  return story;
+ let story=stages[stageIndex].story;
+ if(!player)return story;
+ const map={uemura:"上村",imemura:"今村",matsuura:"松浦"};
+ const name=map[player.id];
+ if(name&&stages[stageIndex].enemies.includes(player.id)){
+  story=story.replaceAll(name,"高瀬");
+ }
+ return story;
 }
 
-/* =========================================
-   画面切り替え
-========================================= */
-
 function hideAll(){
-  [
-    "titleScreen",
-    "selectScreen",
-    "storyScreen",
-    "battleScreen",
-    "resultScreen"
-  ].forEach(id=>{
-    document.getElementById(id).classList.add("hidden");
-  });
+ ["titleScreen","selectScreen","storyScreen","battleScreen","resultScreen","endingScreen"]
+ .forEach(id=>document.getElementById(id).classList.add("hidden"));
 }
 
 function showTitle(){
-  if(busy)return;
-
-  hideAll();
-  document.getElementById("titleScreen").classList.remove("hidden");
-  gameState="title";
+ if(busy)return;
+ hideAll();
+ document.getElementById("titleScreen").classList.remove("hidden");
+ gameState="title";
 }
 
 function showCharacterSelect(){
-  hideAll();
-  document.getElementById("selectScreen").classList.remove("hidden");
-
-  gameState="select";
-  selectedCharacter=null;
-
-  document.getElementById("startButton").disabled=true;
-
-  renderCharacterList();
+ hideAll();
+ document.getElementById("selectScreen").classList.remove("hidden");
+ gameState="select";
+ selectedCharacter=null;
+ document.getElementById("startButton").disabled=true;
+ renderCharacterList();
 }
-
-/* =========================================
-   キャラクター選択
-========================================= */
 
 function renderCharacterList(){
-  const list=document.getElementById("characterList");
-  list.innerHTML="";
-
-  characters.forEach(c=>{
-    const div=document.createElement("div");
-    div.className="character";
-
-    div.innerHTML=`
-      <h3>${c.name}</h3>
-      <p>${c.description}</p>
-      <p><strong>能力：</strong>${c.abilityText}</p>
-      <p>HP：${c.maxHp}</p>
-      <p>MP：${c.maxMp}</p>
-      <p>攻撃力：${c.attackPower}</p>
-      <hr>
-      <p><strong>${c.skills[0].name}</strong></p>
-      <p class="small">${c.skills[0].description}</p>
-      <p><strong>${c.skills[1].name}</strong></p>
-      <p class="small">${c.skills[1].description}</p>
-    `;
-
-    div.onclick=()=>{
-      selectedCharacter=c.id;
-
-      document.querySelectorAll(".character").forEach(x=>{
-        x.classList.remove("selected");
-      });
-
-      div.classList.add("selected");
-
-      document.getElementById("startButton").disabled=false;
-    };
-
-    list.appendChild(div);
-  });
+ const list=document.getElementById("characterList");
+ list.innerHTML="";
+ characters.forEach(c=>{
+  const div=document.createElement("div");
+  div.className="character";
+  div.innerHTML=`
+   <h3>${c.name}</h3>
+   <p>${c.description}</p>
+   <p><strong>能力：</strong>${c.abilityText}</p>
+   <p>HP：${c.maxHp}</p>
+   <p>MP：${c.maxMp}</p>
+   <p>攻撃力：${c.attackPower}</p><hr>
+   <p><strong>${c.skills[0].name}</strong></p>
+   <p class="small">${c.skills[0].description}</p>
+   <p><strong>${c.skills[1].name}</strong></p>
+   <p class="small">${c.skills[1].description}</p>`;
+  div.onclick=()=>{
+   selectedCharacter=c.id;
+   document.querySelectorAll(".character").forEach(x=>x.classList.remove("selected"));
+   div.classList.add("selected");
+   document.getElementById("startButton").disabled=false;
+  };
+  list.appendChild(div);
+ });
 }
-
-/* =========================================
-   ゲーム開始
-========================================= */
 
 function startGame(){
-  if(!selectedCharacter)return;
-
-  const base=characters.find(c=>c.id===selectedCharacter);
-
-  player={
-    id:base.id,
-    name:base.name,
-    maxHp:base.maxHp,
-    hp:base.maxHp,
-    maxMp:base.maxMp,
-    mp:base.maxMp,
-    attackPower:base.attackPower,
-    skills:base.skills
-  };
-
-  currentStage=0;
-  enemyIndex=0;
-  battleStartStatus=null;
-
-  loadStage();
+ if(!selectedCharacter)return;
+ const base=characters.find(c=>c.id===selectedCharacter);
+ player={
+  id:base.id,name:base.name,
+  maxHp:base.maxHp,hp:base.maxHp,
+  maxMp:base.maxMp,mp:base.maxMp,
+  attackPower:base.attackPower,skills:base.skills,
+  sleepGuard:false,foresight:false,
+  attackDownTurns:0
+ };
+ currentStage=0;
+ enemyIndex=0;
+ battleStartStatus=null;
+ fieldEffect=null;
+ loadStage();
 }
-
-/* =========================================
-   ストーリー表示
-========================================= */
 
 function loadStage(){
-  hideAll();
-
-  const stage=stages[currentStage];
-
-  document.getElementById("storyScreen").classList.remove("hidden");
-  document.getElementById("storyTitle").textContent=stage.title;
-
-  /* ★プレイヤーに応じて名前を変更したあらすじを表示 */
-  document.getElementById("storyText").textContent=
-    getStageStory(currentStage);
-
-  gameState="story";
-  busy=false;
-
-  autoSave();
+ hideAll();
+ const stage=stages[currentStage];
+ document.getElementById("storyScreen").classList.remove("hidden");
+ document.getElementById("storyTitle").textContent=stage.title;
+ document.getElementById("storyText").textContent=getStageStory(currentStage);
+ gameState="story";
+ busy=false;
+ autoSave();
 }
 
-/* =========================================
-   戦闘開始
-========================================= */
-
 function startStageBattle(){
-  enemyIndex=0;
-  battleStartStatus=null;
-  beginBattle();
+ enemyIndex=0;
+ battleStartStatus=null;
+ fieldEffect=null;
+ beginBattle();
 }
 
 function beginBattle(){
+ const enemies=getStageEnemies(currentStage);
+ const enemyKey=enemies[enemyIndex];
+ const data=enemyData[enemyKey];
+ if(!data)return;
 
-  const enemies=getStageEnemies(currentStage);
-  const enemyKey=enemies[enemyIndex];
-  const data=enemyData[enemyKey];
+ if(enemyKey===player.id){
+  console.error("同じキャラクター同士の戦闘を防止しました。");
+  return;
+ }
 
-  if(enemyKey===player.id){
-    console.error("同じキャラクター同士の戦闘を防止しました。");
-    return;
-  }
+ currentEnemy={
+  id:enemyKey,name:data.name,
+  maxHp:data.maxHp,hp:data.maxHp,
+  attackPower:data.attackPower,
+  baseAttack:data.attackPower,
+  ability:data.ability,
+  sleepGuard:false,
+  foresight:false,
+  attackDownTurns:0
+ };
 
-  currentEnemy={
-    id:enemyKey,
-    name:data.name,
-    maxHp:data.maxHp,
-    hp:data.maxHp,
-    attackPower:data.attackPower,
-    baseAttack:data.attackPower,
-    ability:data.ability
+ if(!battleStartStatus){
+  battleStartStatus={
+   hp:player.hp,maxHp:player.maxHp,
+   mp:player.mp,maxMp:player.maxMp,
+   attackPower:player.attackPower
   };
+ }
 
-  if(!battleStartStatus){
-    battleStartStatus={
-      hp:player.hp,
-      maxHp:player.maxHp,
-      mp:player.mp,
-      maxMp:player.maxMp,
-      attackPower:player.attackPower
-    };
-  }
+ player.sleepGuard=false;
+ player.foresight=false;
+ player.attackDownTurns=0;
+ fieldEffect=null;
+ defending=false;
+ busy=false;
+ gameState="battle";
 
-  player._sleepGuard=false;
-  player._foresight=false;
+ hideAll();
+ document.getElementById("battleScreen").classList.remove("hidden");
 
-  defending=false;
-  busy=false;
-  gameState="battle";
+ document.getElementById("stageTitle").textContent=
+  stages[currentStage].title+
+  (enemies.length>1?"（戦闘 "+(enemyIndex+1)+"/"+enemies.length+"）":"");
 
-  hideAll();
-  document.getElementById("battleScreen").classList.remove("hidden");
+ if(enemyIndex===0)clearLog();
+ addLog(stages[currentStage].title+" の戦闘開始！","story");
 
-  const stage=stages[currentStage];
+ if(enemyKey==="kurota")addLog("黒田：「お前を消してやる」","enemy");
+ else if(enemyKey==="takase")addLog("高瀬：「俺も負けるつもりはない」","enemy");
+ else addLog(currentEnemy.name+"が現れた！","enemy");
 
-  document.getElementById("stageTitle").textContent=
-    stage.title+
-    (enemies.length>1
-      ?"（戦闘 "+(enemyIndex+1)+"/"+enemies.length+"）"
-      :"");
-
-  clearLog();
-
-  addLog(stage.title+" の戦闘開始！","story");
-
-  if(enemyKey==="kurota"){
-    addLog("黒田：「お前を消してやる」","enemy");
-  }
-  else if(enemyKey==="takase"){
-    addLog("高瀬：「俺も負けるつもりはない」","enemy");
-  }
-  else{
-    addLog(currentEnemy.name+"が現れた！","enemy");
-  }
-
-  updateBattleUI();
-  autoSave();
+ updateBattleUI();
+ autoSave();
 }
 
-/* =========================================
-   バトルログ
-========================================= */
-
 function clearLog(){
-  document.getElementById("battleLog").innerHTML="";
+ document.getElementById("battleLog").innerHTML="";
 }
 
 function addLog(message,type="system"){
-  const log=document.getElementById("battleLog");
-  const div=document.createElement("div");
-
-  div.className="log-"+type;
-  div.textContent=message;
-
-  log.appendChild(div);
-  log.scrollTop=log.scrollHeight;
+ const log=document.getElementById("battleLog");
+ const div=document.createElement("div");
+ div.className="log-"+type;
+ div.textContent=message;
+ log.appendChild(div);
+ log.scrollTop=log.scrollHeight;
 }
 
-/* =========================================
-   ステータス表示
-========================================= */
+function effectivePlayerAttack(){
+ let value=player.attackPower;
+ if(fieldEffect&&fieldEffect.owner==="player")value+=10;
+ if(fieldEffect&&fieldEffect.owner==="enemy")value-=8;
+ if(player.attackDownTurns>0)value-=5;
+ return Math.max(1,value);
+}
+
+function effectiveEnemyAttack(){
+ let value=currentEnemy.attackPower;
+ if(fieldEffect&&fieldEffect.owner==="enemy")value+=10;
+ if(fieldEffect&&fieldEffect.owner==="player")value-=8;
+ if(currentEnemy.attackDownTurns>0)value-=5;
+ return Math.max(1,value);
+}
 
 function updateBattleUI(){
+ if(!player||!currentEnemy)return;
 
-  if(!player||!currentEnemy)return;
+ document.getElementById("playerName").textContent=player.name;
+ document.getElementById("playerHpText").textContent=player.hp+" / "+player.maxHp;
+ document.getElementById("playerMpText").textContent=player.mp+" / "+player.maxMp;
+ document.getElementById("playerAttack").textContent=
+  effectivePlayerAttack()+(effectivePlayerAttack()!==player.attackPower?"（補正中）":"");
 
-  document.getElementById("playerName").textContent=player.name;
+ document.getElementById("playerHpBar").style.width=
+  Math.max(0,player.hp/player.maxHp*100)+"%";
+ document.getElementById("playerMpBar").style.width=
+  Math.max(0,player.mp/player.maxMp*100)+"%";
 
-  document.getElementById("playerHpText").textContent=
-    player.hp+" / "+player.maxHp;
+ document.getElementById("enemyName").textContent=currentEnemy.name;
+ document.getElementById("enemyHpText").textContent=currentEnemy.hp+" / "+currentEnemy.maxHp;
+ document.getElementById("enemyAttack").textContent=
+  effectiveEnemyAttack()+(effectiveEnemyAttack()!==currentEnemy.attackPower?"（補正中）":"");
+ document.getElementById("enemyHpBar").style.width=
+  Math.max(0,currentEnemy.hp/currentEnemy.maxHp*100)+"%";
+ document.getElementById("enemyAbility").textContent="能力："+currentEnemy.ability;
 
-  document.getElementById("playerMpText").textContent=
-    player.mp+" / "+player.maxMp;
+ document.getElementById("skillButton1").textContent=
+  player.skills[0].name+"（"+player.skills[0].cost+"MP）";
+ document.getElementById("skillButton2").textContent=
+  player.skills[1].name+"（"+player.skills[1].cost+"MP）";
 
-  document.getElementById("playerAttack").textContent=
-    player.attackPower;
+ document.getElementById("skillButton1").disabled=
+  busy||player.mp<player.skills[0].cost;
+ document.getElementById("skillButton2").disabled=
+  busy||player.mp<player.skills[1].cost;
 
-  document.getElementById("playerHpBar").style.width=
-    Math.max(0,player.hp/player.maxHp*100)+"%";
+ document.getElementById("attackButton").disabled=busy;
+ document.getElementById("defendButton").disabled=busy;
 
-  document.getElementById("playerMpBar").style.width=
-    Math.max(0,player.mp/player.maxMp*100)+"%";
+ document.getElementById("skillDescription").textContent=
+  "① "+player.skills[0].description+"\n② "+player.skills[1].description;
 
-  document.getElementById("enemyName").textContent=
-    currentEnemy.name;
-
-  document.getElementById("enemyHpText").textContent=
-    currentEnemy.hp+" / "+currentEnemy.maxHp;
-
-  document.getElementById("enemyAttack").textContent=
-    currentEnemy.attackPower;
-
-  document.getElementById("enemyHpBar").style.width=
-    Math.max(0,currentEnemy.hp/currentEnemy.maxHp*100)+"%";
-
-  document.getElementById("enemyAbility").textContent=
-    "能力："+currentEnemy.ability;
-
-  document.getElementById("skillButton1").textContent=
-    player.skills[0].name+"（"+player.skills[0].cost+"MP）";
-
-  document.getElementById("skillButton2").textContent=
-    player.skills[1].name+"（"+player.skills[1].cost+"MP）";
-
-  document.getElementById("skillButton1").disabled=
-    busy||player.mp<player.skills[0].cost;
-
-  document.getElementById("skillButton2").disabled=
-    busy||player.mp<player.skills[1].cost;
-
-  document.getElementById("skillDescription").textContent=
-    "① "+player.skills[0].description+
-    "\n② "+player.skills[1].description;
+ const field=document.getElementById("fieldStatus");
+ if(fieldEffect&&fieldEffect.turns>0){
+  field.classList.add("active");
+  field.textContent=
+   (fieldEffect.owner==="player"?"自分側":"敵側")+
+   "の『一番好き』：攻撃力上昇・相手の攻撃力低下（残り"+
+   fieldEffect.turns+"ターン）";
+ }else{
+  field.classList.remove("active");
+  field.textContent="";
+ }
 }
-
-/* =========================================
-   プレイヤー行動
-========================================= */
 
 async function playerAction(action){
+ if(busy||gameState!=="battle")return;
+ busy=true;
+ updateBattleUI();
+ defending=false;
 
-  if(busy||gameState!=="battle")return;
+ if(action==="attack"){
+  if(currentEnemy.sleepGuard){
+   currentEnemy.sleepGuard=false;
+   addLog(currentEnemy.name+"は眠りに落ちている。","enemy");
+   addLog("攻撃は眠りによって無効化された！","system");
+  }else if(currentEnemy.foresight){
+   currentEnemy.foresight=false;
+   addLog(currentEnemy.name+"：「一手先を読んでいた」","enemy");
+   addLog("攻撃を見切られた！","system");
+  }else{
+   const damage=effectivePlayerAttack()+random(0,5);
+   currentEnemy.hp-=damage;
+   addLog(player.name+"の攻撃！ "+damage+"ダメージ！","player");
+  }
+ }
+ else if(action==="defend"){
+  defending=true;
+  addLog(player.name+"は防御した。","player");
+ }
+ else if(action==="skill1"||action==="skill2"){
+  const index=action==="skill1"?0:1;
+  const skill=player.skills[index];
+  if(player.mp<skill.cost){
+   addLog("MPが足りない！","system");
+   busy=false;
+   updateBattleUI();
+   return;
+  }
+  player.mp-=skill.cost;
+  await useSkill(skill);
+ }
 
-  busy=true;
+ updateBattleUI();
+
+ if(currentEnemy.hp<=0){
+  currentEnemy.hp=0;
   updateBattleUI();
+  await wait(500);
+  enemyDefeated();
+  return;
+ }
 
-  defending=false;
+ await wait(700);
+ const survived=await enemyTurn();
+ if(!survived)return;
 
-  if(action==="attack"){
+ player.mp=Math.min(player.maxMp,player.mp+5);
+ addLog("ターン終了。MPが5回復した。","system");
 
-    const damage=player.attackPower+random(0,5);
+ if(player.attackDownTurns>0){
+  player.attackDownTurns--;
+  if(player.attackDownTurns===0)addLog("攻撃力低下が解除された。","system");
+ }
+ if(currentEnemy.attackDownTurns>0){
+  currentEnemy.attackDownTurns--;
+  if(currentEnemy.attackDownTurns===0)addLog("敵の攻撃力低下が解除された。","system");
+ }
 
-    currentEnemy.hp-=damage;
-
-    addLog(
-      player.name+"の攻撃！ "+damage+"ダメージ！",
-      "player"
-    );
+ if(fieldEffect){
+  fieldEffect.turns--;
+  if(fieldEffect.turns<=0){
+   addLog("フィールド効果『一番好き』が消えた。","system");
+   fieldEffect=null;
   }
+ }
 
-  else if(action==="defend"){
-
-    defending=true;
-
-    addLog(player.name+"は防御した。","player");
-  }
-
-  else if(action==="skill1"||action==="skill2"){
-
-    const index=action==="skill1"?0:1;
-    const skill=player.skills[index];
-
-    if(player.mp<skill.cost){
-      addLog("MPが足りない！","system");
-      busy=false;
-      updateBattleUI();
-      return;
-    }
-
-    player.mp-=skill.cost;
-
-    await useSkill(skill);
-  }
-
-  updateBattleUI();
-
-  if(currentEnemy.hp<=0){
-    currentEnemy.hp=0;
-    updateBattleUI();
-
-    await wait(500);
-
-    enemyDefeated();
-    return;
-  }
-
-  await wait(700);
-
-  const survived=await enemyTurn();
-
-  if(!survived)return;
-
-  player.mp=Math.min(player.maxMp,player.mp+5);
-
-  addLog("ターン終了。MPが5回復した。","system");
-
-  updateBattleUI();
-
-  busy=false;
-  autoSave();
+ busy=false;
+ updateBattleUI();
+ autoSave();
 }
-
-/* =========================================
-   スキル処理
-========================================= */
 
 async function useSkill(skill){
+ switch(skill.effect){
+ case "sleep":
+  addLog(player.name+"：「少し寝るわ」","player");
+  await wait(350);
+  addLog("『寝落ち』発動！次の攻撃を無効化する。","player");
+  player.sleepGuard=true;
+  player.hp=Math.min(player.maxHp,player.hp+15);
+  break;
 
-  switch(skill.effect){
+ case "favorite":
+  fieldEffect={owner:"player",turns:3};
+  addLog(player.name+"：「ここが一番好きだ」","player");
+  await wait(350);
+  addLog("『一番好き』発動！3ターンのフィールドが展開された！","player");
+  addLog("自分の攻撃力が10上昇し、敵の攻撃力が8低下する！","player");
+  break;
 
-    case "sleep":{
-      addLog("高瀬：「少し寝るわ」","player");
+ case "comeback":{
+  const missing=player.maxHp-player.hp;
+  const damage=20+Math.floor(missing*.25)+random(0,5);
+  currentEnemy.hp-=damage;
+  addLog("上村：「まだ終わらない！」","player");
+  await wait(350);
+  addLog("『かませ犬』！ "+damage+"ダメージ！","player");
+  break;
+ }
 
-      await wait(350);
+ case "lastPunch":{
+  const ratio=1-player.hp/player.maxHp;
+  const damage=18+Math.floor(ratio*45)+random(0,5);
+  currentEnemy.hp-=damage;
+  addLog("上村：「ここから逆転する！」","player");
+  await wait(350);
+  addLog("『逆転の拳』！ "+damage+"ダメージ！","player");
+  break;
+ }
 
-      addLog("『寝落ち』発動！次の攻撃を無効化する。","player");
+ case "borrow":{
+  const damage=24+random(0,7);
+  currentEnemy.hp-=damage;
+  currentEnemy.attackDownTurns=Math.max(currentEnemy.attackDownTurns,3);
+  addLog("今村：「それ、借りるね」","player");
+  await wait(350);
+  addLog("敵の力を借りた！ "+damage+"ダメージ！敵の攻撃力が低下した！","player");
+  break;
+ }
 
-      player._sleepGuard=true;
-      player.hp=Math.min(player.maxHp,player.hp+15);
-      break;
-    }
+ case "foresight":
+  player.foresight=true;
+  addLog("今村：「次の一手は読めている」","player");
+  addLog("『一手先』！次の攻撃を回避する。","player");
+  break;
 
-    case "favorite":{
-      const damage=48+random(0,12);
+ case "value":{
+  const damage=29+random(0,8);
+  currentEnemy.hp-=damage;
+  currentEnemy.attackDownTurns=Math.max(currentEnemy.attackDownTurns,3);
+  addLog("松浦：「お前の価値を奪う」","player");
+  await wait(350);
+  addLog("敵の価値を奪った！ "+damage+"ダメージ！攻撃力が低下した！","player");
+  break;
+ }
 
-      currentEnemy.hp-=damage;
-
-      addLog("高瀬：「ここが一番好きだ」","player");
-
-      await wait(350);
-
-      addLog("『一番好き』！ "+damage+"ダメージ！","player");
-      break;
-    }
-
-    case "comeback":{
-      const missing=player.maxHp-player.hp;
-      const damage=30+Math.floor(missing*0.35)+random(0,8);
-
-      currentEnemy.hp-=damage;
-
-      addLog("上村：「まだ終わらない！」","player");
-
-      await wait(350);
-
-      addLog("『かませ犬』！ "+damage+"ダメージ！","player");
-      break;
-    }
-
-    case "lastPunch":{
-      const ratio=1-player.hp/player.maxHp;
-      const damage=25+Math.floor(ratio*65)+random(0,8);
-
-      currentEnemy.hp-=damage;
-
-      addLog("上村：「ここから逆転する！」","player");
-
-      await wait(350);
-
-      addLog("『逆転の拳』！ "+damage+"ダメージ！","player");
-      break;
-    }
-
-    case "borrow":{
-      const damage=28+random(0,10);
-
-      currentEnemy.hp-=damage;
-      currentEnemy.attackPower=Math.max(5,currentEnemy.baseAttack-7);
-
-      addLog("今村：「それ、借りるね」","player");
-
-      await wait(350);
-
-      addLog("敵の力を奪った！ "+damage+"ダメージ！","player");
-      break;
-    }
-
-    case "foresight":{
-      player._foresight=true;
-
-      addLog("今村：「次の一手は読めている」","player");
-      addLog("『一手先』！次の攻撃を回避する。","player");
-      break;
-    }
-
-    case "value":{
-      const damage=25+random(0,10);
-
-      currentEnemy.hp-=damage;
-      currentEnemy.attackPower=Math.max(5,currentEnemy.baseAttack-10);
-
-      addLog("松浦：「お前の価値を奪う」","player");
-
-      await wait(350);
-
-      addLog("敵の力を奪った！ "+damage+"ダメージ！","player");
-      break;
-    }
-
-    case "sink":{
-      const damage=48+random(0,12);
-
-      currentEnemy.hp-=damage;
-
-      addLog("松浦：「沈め」","player");
-
-      await wait(350);
-
-      addLog("『沈む』！ "+damage+"ダメージ！","player");
-      break;
-    }
-  }
-
-  updateBattleUI();
+ case "sink":{
+  const damage=40+random(0,10);
+  currentEnemy.hp-=damage;
+  addLog("松浦：「沈め」","player");
+  await wait(350);
+  addLog("『沈む』！ "+damage+"ダメージ！","player");
+  break;
+ }
+ }
+ updateBattleUI();
 }
-
-/* =========================================
-   敵の行動
-========================================= */
 
 async function enemyTurn(){
+ if(currentEnemy.hp<=0)return true;
 
-  if(currentEnemy.hp<=0)return true;
-
-  if(player._sleepGuard){
-    player._sleepGuard=false;
-
-    addLog("眠っている間に攻撃を無効化した！","player");
-
-    return true;
-  }
-
-  if(player._foresight){
-    player._foresight=false;
-
-    addLog("『一手先』！攻撃を回避した！","player");
-
-    return true;
-  }
-
-  let damage=currentEnemy.attackPower+random(0,6);
-
-  if(defending){
-    damage=Math.floor(damage*0.4);
-    addLog("防御してダメージを軽減！","player");
-  }
-
-  if(currentEnemy.id==="uemura"){
-
-    addLog("上村：「まだまだ！」","enemy");
-
-    if(currentEnemy.hp<currentEnemy.maxHp*0.5){
-      damage+=8;
-      addLog("『かませ犬』！攻撃力が上昇！","enemy");
-    }
-  }
-
-  if(currentEnemy.id==="imemura"){
-
-    if(Math.random()<0.45){
-      addLog("今村：「それ、借りるね」","enemy");
-      damage+=8;
-    }else{
-      addLog("今村：「次の一手は読めている」","enemy");
-    }
-  }
-
-  if(currentEnemy.id==="matsuura"){
-
-    if(Math.random()<0.45){
-      addLog("松浦：「沈め」","enemy");
-      damage+=10;
-    }else{
-      addLog("松浦：「価値を奪ってやる」","enemy");
-    }
-  }
-
-  if(currentEnemy.id==="takase"){
-
-    if(Math.random()<0.35){
-      addLog("高瀬：「ちょっと寝るわ」","enemy");
-      addLog("『寝落ち』！攻撃を無効化された！","enemy");
-      return true;
-    }
-
-    if(Math.random()<0.5){
-      addLog("高瀬：「ここが一番好きだ」","enemy");
-      damage+=12;
-    }else{
-      addLog("高瀬：「まだ眠くない」","enemy");
-    }
-  }
-
-  if(currentEnemy.id==="kurota"){
-
-    if(Math.random()<0.5){
-      addLog("黒田：「欠席」","enemy");
-      damage+=12;
-    }else{
-      addLog("黒田：「出席」","enemy");
-      damage+=7;
-    }
-  }
-
-  await wait(450);
-
-  player.hp-=damage;
-
-  addLog(
-    currentEnemy.name+"の攻撃！ "+damage+"ダメージ！",
-    "enemy"
-  );
-
-  if(player.hp<=0){
-
-    player.hp=0;
-
-    updateBattleUI();
-
-    await wait(450);
-
-    defeat();
-
-    return false;
-  }
-
-  updateBattleUI();
-
+ if(player.sleepGuard){
+  player.sleepGuard=false;
+  addLog("眠っている間に攻撃を無効化した！","player");
   return true;
-}
+ }
 
-/* =========================================
-   敵撃破
-========================================= */
+ if(player.foresight){
+  player.foresight=false;
+  addLog("『一手先』！攻撃を回避した！","player");
+  return true;
+ }
+
+ let damage=effectiveEnemyAttack()+random(0,4);
+ let abilityUsed=false;
+
+ if(defending){
+  damage=Math.floor(damage*.4);
+  addLog("防御してダメージを軽減！","player");
+ }
+
+ if(currentEnemy.id==="uemura"){
+  if(currentEnemy.hp<currentEnemy.maxHp*.5&&Math.random()<.5){
+   damage+=7;
+   addLog("上村：「追い詰められてからが本番だ！」","enemy");
+   addLog("『かませ犬』発動！","enemy");
+   abilityUsed=true;
+  }else if(Math.random()<.25){
+   damage+=5;
+   addLog("上村：「逆転の拳！」","enemy");
+   abilityUsed=true;
+  }
+ }
+
+ if(currentEnemy.id==="imemura"){
+  if(Math.random()<.45){
+   damage+=8;
+   player.attackDownTurns=Math.max(player.attackDownTurns,2);
+   addLog("今村：「それ、借りるね」","enemy");
+   addLog("こちらの攻撃力が低下した！","enemy");
+   abilityUsed=true;
+  }else if(Math.random()<.45){
+   currentEnemy.foresight=true;
+   addLog("今村：「一手先は読めている」","enemy");
+   addLog("次の攻撃を見切る構えだ。","enemy");
+   abilityUsed=true;
+  }
+ }
+
+ if(currentEnemy.id==="matsuura"){
+  if(Math.random()<.45){
+   damage+=10;
+   player.attackDownTurns=Math.max(player.attackDownTurns,2);
+   addLog("松浦：「価値を奪ってやる」","enemy");
+   addLog("こちらの攻撃力が低下した！","enemy");
+   abilityUsed=true;
+  }else if(Math.random()<.4){
+   damage+=13;
+   addLog("松浦：「沈め！」","enemy");
+   addLog("『沈む』！ヘドロが襲いかかる！","enemy");
+   abilityUsed=true;
+  }
+ }
+
+ if(currentEnemy.id==="takase"){
+  if(Math.random()<.3){
+   currentEnemy.sleepGuard=true;
+   addLog("高瀬：「ちょっと寝るわ」","enemy");
+   addLog("『寝落ち』！次の攻撃を無効化する構えだ。","enemy");
+   abilityUsed=true;
+  }else if(Math.random()<.5){
+   fieldEffect={owner:"enemy",turns:3};
+   damage+=5;
+   addLog("高瀬：「ここが一番好きだ」","enemy");
+   addLog("『一番好き』発動！高瀬側にフィールドが展開された！","enemy");
+   abilityUsed=true;
+  }
+ }
+
+ if(currentEnemy.id==="kurota"){
+  if(Math.random()<.4){
+   currentEnemy.foresight=true;
+   damage+=8;
+   addLog("黒田：「欠席」","enemy");
+   addLog("『欠席』！次の攻撃を回避する構えだ。","enemy");
+   abilityUsed=true;
+  }else{
+   damage+=16;
+   addLog("黒田：「出席」","enemy");
+   addLog("『出席』！存在を強め、攻撃力が上昇した！","enemy");
+   abilityUsed=true;
+  }
+ }
+
+ if(!abilityUsed)addLog(currentEnemy.name+"は通常攻撃の構えを取った。","enemy");
+
+ await wait(450);
+
+ player.hp-=damage;
+ addLog(currentEnemy.name+"の攻撃！ "+damage+"ダメージ！","enemy");
+
+ if(player.hp<=0){
+  player.hp=0;
+  updateBattleUI();
+  await wait(450);
+  defeat();
+  return false;
+ }
+
+ updateBattleUI();
+ return true;
+}
 
 function enemyDefeated(){
+ busy=false;
+ addLog(currentEnemy.name+"を倒した！","story");
 
-  busy=false;
+ // 戦闘終了後、HPが最低75%になるように回復
+ const recoveryHP=Math.ceil(player.maxHp*0.75);
 
-  addLog(currentEnemy.name+"を倒した！","story");
+ if(player.hp<recoveryHP){
+  const before=player.hp;
+  player.hp=recoveryHP;
+  addLog(
+   "戦闘後の回復！ HPが"+(player.hp-before)+
+   "回復した（現在HP："+player.hp+"）",
+   "system"
+  );
+ }else{
+  addLog("HPは十分に残っている。","system");
+ }
 
-  const enemies=getStageEnemies(currentStage);
+ updateBattleUI();
 
-  if(enemyIndex<enemies.length-1){
-
-    enemyIndex++;
-
-    addLog("次の能力者が現れた……","story");
-
-    /* 次の敵をロード時に正しく生成できるようにする */
-    currentEnemy=null;
-    autoSave();
-
-    setTimeout(()=>{
-      beginBattle();
-    },1000);
-
-    return;
-  }
-
-  victory();
+ const enemies=getStageEnemies(currentStage);
+ if(enemyIndex<enemies.length-1){
+  enemyIndex++;
+  addLog("次の能力者が現れた……","story");
+  currentEnemy=null;
+  autoSave();
+  setTimeout(()=>beginBattle(),1000);
+  return;
+ }
+ victory();
 }
-
-/* =========================================
-   勝利
-========================================= */
 
 function victory(){
-
-  busy=false;
-  gameState="victory";
-
-  player.hp=Math.min(player.maxHp,player.hp+20);
-
-  hideAll();
-
-  document.getElementById("resultScreen").classList.remove("hidden");
-
-  document.getElementById("resultTitle").textContent="勝利！";
-
-  document.getElementById("resultText").textContent=
-    currentEnemy.name+"に勝利した！\nHPが20回復した。";
-
-  document.getElementById("nextButton").textContent=
-    currentStage===stages.length-1
-      ?"エンディングへ"
-      :"次の章へ";
-
-  autoSave();
+ busy=false;
+ gameState="victory";
+ hideAll();
+ document.getElementById("resultScreen").classList.remove("hidden");
+ document.getElementById("resultTitle").textContent="勝利！";
+ document.getElementById("resultText").textContent=
+  currentEnemy.name+"に勝利した！\n戦闘後の回復が適用された。";
+ document.getElementById("nextButton").textContent=
+  currentStage===stages.length-1?"エンディングへ":"次の章へ";
+ autoSave();
 }
-
-/* =========================================
-   敗北
-========================================= */
 
 function defeat(){
-
-  busy=false;
-  gameState="defeat";
-
-  hideAll();
-
-  document.getElementById("resultScreen").classList.remove("hidden");
-
-  document.getElementById("resultTitle").textContent="敗北……";
-
-  document.getElementById("resultText").textContent=
-    player.name+"は倒れてしまった。\n"+
-    "章の最初の状態に戻して再挑戦できる。";
-
-  document.getElementById("nextButton").textContent="再挑戦";
-
-  autoSave();
+ busy=false;
+ gameState="defeat";
+ hideAll();
+ document.getElementById("resultScreen").classList.remove("hidden");
+ document.getElementById("resultTitle").textContent="敗北……";
+ document.getElementById("resultText").textContent=
+  player.name+"は倒れてしまった。\n章の最初の状態に戻して再挑戦できる。";
+ document.getElementById("nextButton").textContent="再挑戦";
+ autoSave();
 }
-
-/* =========================================
-   次の章・再挑戦
-========================================= */
 
 function nextStage(){
+ if(gameState==="defeat"){
+  retryBattle();
+  return;
+ }
+ if(gameState!=="victory")return;
 
-  if(gameState==="defeat"){
-    retryBattle();
-    return;
-  }
+ if(currentStage>=stages.length-1){
+  startEnding();
+  return;
+ }
 
-  if(gameState!=="victory")return;
-
-  if(currentStage>=stages.length-1){
-
-    hideAll();
-
-    document.getElementById("titleScreen").classList.remove("hidden");
-
-    gameState="title";
-
-    localStorage.removeItem(SAVE_KEY);
-
-    document.getElementById("saveMessage").textContent=
-      "ゲームクリア！";
-
-    return;
-  }
-
-  currentStage++;
-  enemyIndex=0;
-  battleStartStatus=null;
-
-  player.hp=Math.min(player.maxHp,player.hp+25);
-  player.mp=Math.min(player.maxMp,player.mp+10);
-
-  loadStage();
+ currentStage++;
+ enemyIndex=0;
+ battleStartStatus=null;
+ fieldEffect=null;
+ player.hp=Math.min(player.maxHp,player.hp+25);
+ player.mp=Math.min(player.maxMp,player.mp+10);
+ loadStage();
 }
-
-/* =========================================
-   再挑戦
-========================================= */
 
 function retryBattle(){
-
-  if(!battleStartStatus)return;
-
-  player.hp=battleStartStatus.hp;
-  player.maxHp=battleStartStatus.maxHp;
-  player.mp=battleStartStatus.mp;
-  player.maxMp=battleStartStatus.maxMp;
-  player.attackPower=battleStartStatus.attackPower;
-
-  enemyIndex=0;
-
-  beginBattle();
+ if(!battleStartStatus)return;
+ player.hp=battleStartStatus.hp;
+ player.maxHp=battleStartStatus.maxHp;
+ player.mp=battleStartStatus.mp;
+ player.maxMp=battleStartStatus.maxMp;
+ player.attackPower=battleStartStatus.attackPower;
+ player.sleepGuard=false;
+ player.foresight=false;
+ player.attackDownTurns=0;
+ fieldEffect=null;
+ enemyIndex=0;
+ beginBattle();
 }
 
-/* =========================================
-   セーブ
-========================================= */
+/* エンディング */
+const endingScenes=[
+`黒田が倒れた。
 
+長い戦いが、ようやく終わった。
+
+崩れかけた校舎に、静けさが戻ってくる。
+
+能力者たちは、もう動かない。
+
+高瀬はゆっくりと周囲を見渡した。`,
+
+`ここは、ずっと自分が過ごしてきた場所だった。
+
+授業を受けた教室。
+友達と話した廊下。
+何気なく過ごした、いつもの時間。
+
+戦いの舞台になってしまったけれど、
+それでも、ここにはたくさんの思い出があった。`,
+
+`高瀬は、いつものように眠気を感じた。
+
+「……少し寝るわ」
+
+誰も返事をしない。
+
+静かな教室で、高瀬は机に突っ伏した。
+
+そして、そのまま眠りについた。`,
+
+`翌朝。
+
+学校は閉鎖されていた。
+
+校門は閉ざされ、校舎には誰もいない。
+
+昨日まで確かに存在していたはずの記録も、
+能力者たちの名前も、戦いの痕跡も、
+すべて消えていた。`,
+
+`誰も、あの戦いを覚えていない。
+
+誰も、あの能力者たちを知らない。
+
+ただ、教室の机の上に、
+一枚の小さなメモだけが残されていた。`
+];
+
+function startEnding(){
+ hideAll();
+ document.getElementById("endingScreen").classList.remove("hidden");
+ gameState="ending";
+ endingStep=0;
+ document.getElementById("endingTitle").textContent="最終話　一番好き";
+ document.getElementById("endingNote").classList.add("hidden");
+ document.getElementById("endingButton").textContent="次へ";
+ showEndingScene();
+ autoSave();
+}
+
+function showEndingScene(){
+ document.getElementById("endingText").textContent=endingScenes[endingStep];
+ if(endingStep===endingScenes.length-1){
+  document.getElementById("endingButton").textContent="メモを見る";
+ }else{
+  document.getElementById("endingButton").textContent="次へ";
+ }
+}
+
+function endingNext(){
+ if(gameState!=="ending")return;
+
+ if(endingStep<endingScenes.length-1){
+  endingStep++;
+  showEndingScene();
+  autoSave();
+  return;
+ }
+
+ if(endingStep===endingScenes.length-1){
+  document.getElementById("endingText").textContent="";
+  document.getElementById("endingNote").classList.remove("hidden");
+  document.getElementById("endingButton").textContent="タイトルへ";
+  endingStep++;
+  return;
+ }
+
+ hideAll();
+ document.getElementById("titleScreen").classList.remove("hidden");
+ gameState="title";
+ localStorage.removeItem(SAVE_KEY);
+ document.getElementById("saveMessage").textContent="ゲームクリア！";
+}
+
+/* セーブ */
 function makeSaveData(){
-
-  return {
-    selectedCharacter,
-
-    player:{
-      id:player.id,
-      name:player.name,
-      hp:player.hp,
-      maxHp:player.maxHp,
-      mp:player.mp,
-      maxMp:player.maxMp,
-      attackPower:player.attackPower
-    },
-
-    currentStage,
-    enemyIndex,
-    currentEnemy,
-    battleStartStatus,
-    gameState
-  };
+ return {
+  selectedCharacter,
+  player:{
+   id:player.id,name:player.name,
+   hp:player.hp,maxHp:player.maxHp,
+   mp:player.mp,maxMp:player.maxMp,
+   attackPower:player.attackPower,
+   sleepGuard:player.sleepGuard,
+   foresight:player.foresight,
+   attackDownTurns:player.attackDownTurns
+  },
+  currentStage,enemyIndex,currentEnemy,
+  battleStartStatus,gameState,fieldEffect,endingStep
+ };
 }
 
 function autoSave(){
-
-  if(!player)return;
-
-  try{
-    localStorage.setItem(
-      SAVE_KEY,
-      JSON.stringify(makeSaveData())
-    );
-  }catch(e){
-    console.error("セーブに失敗しました",e);
-  }
+ if(!player)return;
+ try{
+  localStorage.setItem(SAVE_KEY,JSON.stringify(makeSaveData()));
+ }catch(e){
+  console.error("セーブに失敗しました",e);
+ }
 }
 
 function manualSave(){
-
-  if(!player){
-    alert("セーブできるデータがありません。");
-    return;
-  }
-
-  autoSave();
-
-  alert("セーブしました。");
+ if(!player){
+  alert("セーブできるデータがありません。");
+  return;
+ }
+ autoSave();
+ alert("セーブしました。");
 }
-
-/* =========================================
-   ロード
-========================================= */
 
 function continueGame(){
+ const raw=localStorage.getItem(SAVE_KEY);
+ if(!raw){
+  document.getElementById("saveMessage").textContent="セーブデータがありません。";
+  return;
+ }
 
-  const raw=localStorage.getItem(SAVE_KEY);
+ try{
+  const data=JSON.parse(raw);
+  const base=characters.find(c=>c.id===data.selectedCharacter);
+  if(!base)throw new Error("キャラクター情報がありません");
 
-  if(!raw){
-    document.getElementById("saveMessage").textContent=
-      "セーブデータがありません。";
-    return;
+  selectedCharacter=data.selectedCharacter;
+  player={
+   id:base.id,name:base.name,
+   hp:data.player.hp,maxHp:data.player.maxHp,
+   mp:data.player.mp,maxMp:data.player.maxMp,
+   attackPower:data.player.attackPower,
+   skills:base.skills,
+   sleepGuard:!!data.player.sleepGuard,
+   foresight:!!data.player.foresight,
+   attackDownTurns:data.player.attackDownTurns||0
+  };
+
+  currentStage=data.currentStage;
+  enemyIndex=data.enemyIndex||0;
+  currentEnemy=data.currentEnemy||null;
+  battleStartStatus=data.battleStartStatus||null;
+  fieldEffect=data.fieldEffect||null;
+  endingStep=data.endingStep||0;
+  gameState=data.gameState;
+  busy=false;
+
+  if(gameState==="story"){
+   loadStage();
+  }else if(gameState==="battle"){
+   if(!currentEnemy){
+    beginBattle();
+   }else{
+    hideAll();
+    document.getElementById("battleScreen").classList.remove("hidden");
+    const enemies=getStageEnemies(currentStage);
+    document.getElementById("stageTitle").textContent=
+     stages[currentStage].title+
+     (enemies.length>1?"（戦闘 "+(enemyIndex+1)+"/"+enemies.length+"）":"");
+    clearLog();
+    addLog("セーブデータをロードした。","system");
+    updateBattleUI();
+   }
+  }else if(gameState==="defeat"||gameState==="victory"){
+   hideAll();
+   document.getElementById("resultScreen").classList.remove("hidden");
+   document.getElementById("resultTitle").textContent=
+    gameState==="defeat"?"敗北……":"勝利！";
+   document.getElementById("resultText").textContent=
+    gameState==="defeat"?"再挑戦できます。":"戦闘に勝利した！";
+   document.getElementById("nextButton").textContent=
+    gameState==="defeat"?"再挑戦":
+    currentStage===stages.length-1?"エンディングへ":"次の章へ";
+  }else if(gameState==="ending"){
+   hideAll();
+   document.getElementById("endingScreen").classList.remove("hidden");
+   document.getElementById("endingNote").classList.add("hidden");
+   if(endingStep>=endingScenes.length){
+    document.getElementById("endingText").textContent="";
+    document.getElementById("endingNote").classList.remove("hidden");
+    document.getElementById("endingButton").textContent="タイトルへ";
+   }else{
+    showEndingScene();
+   }
   }
-
-  try{
-
-    const data=JSON.parse(raw);
-
-    const base=characters.find(
-      c=>c.id===data.selectedCharacter
-    );
-
-    if(!base){
-      throw new Error("キャラクター情報がありません");
-    }
-
-    selectedCharacter=data.selectedCharacter;
-
-    player={
-      id:base.id,
-      name:base.name,
-      hp:data.player.hp,
-      maxHp:data.player.maxHp,
-      mp:data.player.mp,
-      maxMp:data.player.maxMp,
-      attackPower:data.player.attackPower,
-      skills:base.skills
-    };
-
-    currentStage=data.currentStage;
-    enemyIndex=data.enemyIndex||0;
-
-    currentEnemy=data.currentEnemy;
-
-    battleStartStatus=data.battleStartStatus||null;
-
-    gameState=data.gameState;
-
-    busy=false;
-
-    if(gameState==="story"){
-
-      loadStage();
-
-    }else if(gameState==="battle"){
-
-      if(!currentEnemy){
-        beginBattle();
-      }else{
-
-        hideAll();
-
-        document.getElementById("battleScreen").classList.remove("hidden");
-
-        const enemies=getStageEnemies(currentStage);
-
-        document.getElementById("stageTitle").textContent=
-          stages[currentStage].title+
-          (enemies.length>1
-            ?"（戦闘 "+(enemyIndex+1)+"/"+enemies.length+"）"
-            :"");
-
-        clearLog();
-
-        addLog("セーブデータをロードした。","system");
-
-        updateBattleUI();
-      }
-
-    }else if(gameState==="defeat"){
-
-      hideAll();
-
-      document.getElementById("resultScreen").classList.remove("hidden");
-
-      document.getElementById("resultTitle").textContent="敗北……";
-
-      document.getElementById("resultText").textContent=
-        "再挑戦できます。";
-
-      document.getElementById("nextButton").textContent="再挑戦";
-
-    }else if(gameState==="victory"){
-
-      hideAll();
-
-      document.getElementById("resultScreen").classList.remove("hidden");
-
-      document.getElementById("resultTitle").textContent="勝利！";
-
-      document.getElementById("resultText").textContent=
-        "戦闘に勝利した！";
-
-      document.getElementById("nextButton").textContent=
-        currentStage===stages.length-1
-          ?"エンディングへ"
-          :"次の章へ";
-    }
-
-  }catch(e){
-
-    console.error(e);
-
-    alert("セーブデータを読み込めませんでした。");
-  }
+ }catch(e){
+  console.error(e);
+  alert("セーブデータを読み込めませんでした。");
+ }
 }
-
-/* =========================================
-   セーブデータ削除
-========================================= */
 
 function deleteSave(){
-
-  if(confirm("セーブデータを削除しますか？")){
-
-    localStorage.removeItem(SAVE_KEY);
-
-    document.getElementById("saveMessage").textContent=
-      "セーブデータを削除しました。";
-  }
+ if(confirm("セーブデータを削除しますか？")){
+  localStorage.removeItem(SAVE_KEY);
+  document.getElementById("saveMessage").textContent="セーブデータを削除しました。";
+ }
 }
-
-/* =========================================
-   補助関数
-========================================= */
 
 function random(min,max){
-  return Math.floor(Math.random()*(max-min+1))+min;
+ return Math.floor(Math.random()*(max-min+1))+min;
 }
-
 function wait(ms){
-  return new Promise(resolve=>setTimeout(resolve,ms));
+ return new Promise(resolve=>setTimeout(resolve,ms));
 }
-
-/* =========================================
-   初期化
-========================================= */
 
 document.getElementById("saveMessage").textContent=
-  localStorage.getItem(SAVE_KEY)
-    ?"セーブデータがあります。"
-    :"セーブデータはありません。";
-
+ localStorage.getItem(SAVE_KEY)?"セーブデータがあります。":"セーブデータはありません。";
 </script>
 </body>
 </html>
