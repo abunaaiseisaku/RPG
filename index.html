@@ -10,8 +10,10 @@
 *{box-sizing:border-box}
 
 body{
-  margin:0;padding:15px;
-  background:#101522;color:#f2f5ff;
+  margin:0;
+  padding:15px;
+  background:#101522;
+  color:#f2f5ff;
   font-family:system-ui,sans-serif;
 }
 
@@ -46,8 +48,14 @@ button{
   cursor:pointer;
 }
 
-button:disabled{opacity:.35;cursor:not-allowed}
-button:hover:not(:disabled){filter:brightness(1.2)}
+button:disabled{
+  opacity:.35;
+  cursor:not-allowed;
+}
+
+button:hover:not(:disabled){
+  filter:brightness(1.2);
+}
 
 .primary{background:#2775a9}
 .special{background:#84622d}
@@ -96,7 +104,11 @@ button:hover:not(:disabled){filter:brightness(1.2)}
   margin:6px 0;
 }
 
-.fill{height:100%;transition:width .3s}
+.fill{
+  height:100%;
+  transition:width .3s;
+}
+
 .hp{background:#ff6577}
 .mp{background:#60adff}
 
@@ -137,6 +149,7 @@ button:hover:not(:disabled){filter:brightness(1.2)}
   line-height:1.8;
   font-size:14px;
   overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
 }
 
 .log p{margin:3px 0}
@@ -176,6 +189,7 @@ button:hover:not(:disabled){filter:brightness(1.2)}
 
 <!-- キャラクター選択 -->
 <section class="panel" id="selectScreen">
+
 <h2>キャラクター選択</h2>
 <p>操作するキャラクターを1人選択してください。</p>
 
@@ -190,12 +204,14 @@ onclick="startGame()" disabled>
 このキャラクターで開始
 </button>
 </div>
+
 </section>
 
 <!-- ゲーム画面 -->
 <section id="gameScreen" class="hidden">
 
 <div class="panel">
+
 <h2 id="chapter"></h2>
 
 <div>
@@ -223,27 +239,35 @@ Lv.<span id="level">1</span>
 <div id="favoriteEffect" class="effect hidden">
 「一番好き」発動中
 </div>
+
 </div>
 
 <div class="panel">
+
 <h2 id="sceneTitle">ストーリー</h2>
 <div class="story" id="storyText"></div>
+
 </div>
 
 <div class="panel enemy hidden" id="enemyArea">
+
 <p class="small">ENEMY</p>
 <div class="enemyname" id="enemyName"></div>
 <p id="enemyDesc" class="small"></p>
+
 <p>HP <span id="enemyHp"></span></p>
+
 <div class="bar">
 <div id="enemyBar" class="fill hp"></div>
 </div>
+
 </div>
 
 <div class="panel">
+
 <h2>コマンド</h2>
 
-<div class="actions" id="battleCommands">
+<div class="actions hidden" id="battleCommands">
 
 <button class="primary"
 onclick="playerAction('attack')">
@@ -277,14 +301,18 @@ onclick="beginBattle()">
 戦闘開始
 </button>
 </div>
+
 </div>
 
 <div class="panel">
+
 <h2>バトルログ</h2>
 <div class="log" id="battleLog"></div>
+
 </div>
 
 <div class="panel hidden" id="resultPanel">
+
 <h2 id="resultTitle">勝利！</h2>
 <div class="story" id="resultText"></div>
 
@@ -292,6 +320,7 @@ onclick="beginBattle()">
 id="nextButton" onclick="nextStage()">
 次へ進む
 </button>
+
 </div>
 
 </section>
@@ -534,6 +563,7 @@ function createCharacterCards(){
   div.id="card_"+c.id;
 
   list.appendChild(div);
+
  });
 
 }
@@ -578,7 +608,6 @@ function startGame(){
 
  document.getElementById("playerName").textContent=selected.name;
 
- // 陽之助だけ「一番好き」を使える
  document.getElementById("favoriteButton")
   .classList.toggle("hidden",selected.id!=="TY");
 
@@ -614,8 +643,10 @@ function updateStatus(){
   .classList.toggle("hidden",favoriteTurns<=0);
 
  if(favoriteTurns>0){
+
   document.getElementById("favoriteEffect").textContent=
    "「一番好き」発動中（残り"+favoriteTurns+"ターン）";
+
  }
 
 }
@@ -664,13 +695,15 @@ function loadStage(){
  const s=stages[stageIndex];
 
  battleStarted=false;
- busy=false;
 
  guarding=false;
  nullify=false;
  predicted=false;
  enemyWeakened=false;
  favoriteTurns=0;
+
+// ★重要：次の章でボタンを再び有効にする
+ setBusy(false);
 
  document.getElementById("chapter").textContent=s.chapter;
  document.getElementById("sceneTitle").textContent=s.title;
@@ -738,26 +771,34 @@ async function playerAction(type){
  if(type==="favorite")cost=25;
 
  if(cost>0&&mp<cost){
+
   writeLog("MPが足りない！");
   return;
+
  }
 
  if(type==="recover"&&mp>=maxMp&&hp>=maxHp){
+
   writeLog("これ以上回復できない！");
   return;
+
  }
 
  setBusy(true);
 
- // 毎ターン、先攻をランダムで決定
+ // 先攻をランダムで決定
  const playerFirst=Math.random()<0.5;
 
  writeLog("―― ターン開始 ――");
 
  if(playerFirst){
-  writeLog("先攻： "+selected.name+"！");
+
+  writeLog("先攻："+selected.name+"！");
+
  }else{
-  writeLog("先攻： 敵！");
+
+  writeLog("先攻：敵！");
+
  }
 
  await delay(700);
@@ -767,11 +808,10 @@ async function playerAction(type){
 
   const survived=await enemyTurn();
 
-  if(!survived||hp<=0){
-   return;
-  }
+  if(!survived||hp<=0)return;
 
   await delay(500);
+
  }
 
  // プレイヤーの行動
@@ -782,8 +822,10 @@ async function playerAction(type){
  await delay(600);
 
  if(enemyHp<=0){
+
   await victory();
   return;
+
  }
 
  // プレイヤーが先攻なら敵が後攻
@@ -791,22 +833,19 @@ async function playerAction(type){
 
   const survived=await enemyTurn();
 
-  if(!survived||hp<=0){
-   return;
-  }
+  if(!survived||hp<=0)return;
 
- }else{
-
-  // 敵先攻のターンで発動した能力は次の敵ターンまで維持
-  // ここでは追加の敵行動は行わない
  }
 
  if(hp<=0){
+
   defeat();
   return;
+
  }
 
  updateStatus();
+
  setBusy(false);
 
 }
@@ -824,22 +863,25 @@ async function executePlayerAction(type){
 
   let damage=attackPower;
 
-  // かませ犬
   if(selected.id==="U"&&hp<maxHp*0.4){
+
    damage=Math.floor(damage*1.6);
    writeLog("かませ犬発動！攻撃力上昇！");
+
   }
 
-  // 一番好きの攻撃力上昇
   if(favoriteTurns>0){
+
    damage=Math.floor(damage*1.5);
    writeLog("「一番好き」の空間が攻撃を強化した！");
+
   }
 
-  // 上村の追い詰められた時の防御
   if(stageIndex===0&&enemyHp<enemyMaxHp*0.4){
+
    damage=Math.floor(damage*0.8);
    writeLog("上村の能力で防御力が上がっている！");
+
   }
 
   damage=Math.max(1,damage);
@@ -908,11 +950,13 @@ async function useSkill(){
    await delay(900);
 
    writeLog("寝落ち発動！次の敵の攻撃を無効化！");
+
    nullify=true;
 
    hp=Math.min(maxHp,hp+20);
 
    writeLog("HPが20回復した！");
+
    break;
 
   case "U":
@@ -1023,21 +1067,97 @@ async function enemyTurn(){
  await delay(900);
 
  writeLog(stages[stageIndex].enemy+"の攻撃！");
+
  await delay(650);
 
  let damage=enemyPower+Math.floor(Math.random()*6);
 
- // 上村の能力
- if(stageIndex===0&&enemyHp<enemyMaxHp*0.4){
-  damage+=8;
-  writeLog("上村の攻撃力が上昇している！");
+ // 敵の特殊能力
+ switch(stageIndex){
+
+  case 0:
+
+   if(enemyHp<enemyMaxHp*0.4){
+
+    damage+=8;
+    writeLog("上村の攻撃力が上昇している！");
+
+   }
+
+   break;
+
+  case 1:
+
+   if(Math.random()<0.4){
+
+    writeLog("今村「一手先は読めている」");
+
+    if(predicted||nullify){
+
+     writeLog("こちらの能力で攻撃を回避した！");
+
+    }else{
+
+     damage=Math.floor(damage*0.7);
+     writeLog("攻撃を読んで威力を抑えた！");
+
+    }
+
+   }
+
+   break;
+
+  case 2:
+
+   if(Math.random()<0.4){
+
+    writeLog("松浦「ヘドロ化！」");
+    damage+=5;
+
+    writeLog("ヘドロが身体にまとわりつく！");
+
+   }
+
+   break;
+
+  case 3:
+
+   if(Math.random()<0.35){
+
+    writeLog("黒木「欠席」");
+
+    if(!nullify&&!predicted){
+
+     writeLog("黒木の能力で次の攻撃が封じられる！");
+     playerSealed=true;
+
+    }
+
+   }
+
+   break;
+
+  case 4:
+
+   if(Math.random()<0.45){
+
+    writeLog("黒木「強制出席！」");
+    damage=Math.floor(damage*1.8);
+
+   }
+
+   break;
+
  }
 
  // 松浦の弱体化
  if(enemyWeakened){
+
   damage=Math.floor(damage*0.5);
   enemyWeakened=false;
+
   writeLog("ヘドロの効果で敵の攻撃力が低下！");
+
  }
 
  // 防御・回避・無効化
@@ -1066,12 +1186,23 @@ async function enemyTurn(){
 
  }
 
+ // 黒木の欠席による攻撃封印
+ if(playerSealed){
+
+  playerSealed=false;
+  damage=0;
+
+  writeLog("存在を消され、攻撃を受けなかった！");
+
+ }
+
  // 一番好きの防御効果
  if(damage>0&&favoriteTurns>0){
 
   damage=Math.ceil(damage*0.5);
 
   writeLog("「一番好き」の空間が攻撃を弱めた！");
+
  }
 
  if(damage>0){
@@ -1088,7 +1219,9 @@ async function enemyTurn(){
   favoriteTurns--;
 
   if(favoriteTurns===0){
+
    writeLog("「一番好き」の空間が消えていく……");
+
   }
 
  }
@@ -1115,6 +1248,7 @@ async function enemyTurn(){
 async function victory(){
 
  setBusy(true);
+
  battleStarted=false;
 
  await delay(500);
@@ -1173,6 +1307,7 @@ async function victory(){
 function defeat(){
 
  setBusy(true);
+
  battleStarted=false;
 
  document.getElementById("battleCommands").classList.add("hidden");
@@ -1225,6 +1360,8 @@ function nextStage(){
 // ==================================
 // 初期化
 // ==================================
+
+let playerSealed=false;
 
 createCharacterCards();
 
