@@ -55,6 +55,8 @@ button:hover:not(:disabled){filter:brightness(1.2)}
 .special{background:#84622d}
 .favorite{background:#7953a8}
 .danger{background:#913d4c}
+.save-button{background:#356b58}
+.load-button{background:#315b86}
 
 .grid{
   display:grid;
@@ -164,6 +166,17 @@ button:hover:not(:disabled){filter:brightness(1.2)}
 .log .bad{color:#ff8994}
 .log .purple{color:#d4a5ff}
 
+.save-info{
+  color:#b6c5dc;
+  font-size:12px;
+  margin-top:8px;
+}
+
+.title-button{
+  width:100%;
+  margin:6px 0;
+}
+
 .hidden{display:none!important}
 .center{text-align:center}
 
@@ -187,8 +200,41 @@ button:hover:not(:disabled){filter:brightness(1.2)}
 <p>能力者編 RPG</p>
 </header>
 
+<!-- タイトル画面 -->
+<section class="panel center" id="titleScreen">
+
+<h2>タイトルメニュー</h2>
+
+<p class="small">
+能力者たちとの戦いが始まる。
+</p>
+
+<button class="primary title-button"
+onclick="showCharacterSelect()">
+はじめから
+</button>
+
+<button class="title-button"
+id="continueButton"
+onclick="continueGame()">
+つづきから
+</button>
+
+<button class="danger title-button"
+id="deleteSaveButton"
+onclick="deleteSave()">
+セーブデータを削除
+</button>
+
+<p id="saveInfo" class="save-info">
+セーブデータはありません。
+</p>
+
+</section>
+
 <!-- キャラクター選択 -->
-<section class="panel" id="selectScreen">
+<section class="panel hidden" id="selectScreen">
+
 <h2>キャラクター選択</h2>
 <p>操作するキャラクターを1人選択してください。</p>
 
@@ -197,25 +243,54 @@ button:hover:not(:disabled){filter:brightness(1.2)}
 <div class="panel center">
 <h3 id="selectedName">キャラクターを選択してください</h3>
 <p id="selectedDesc" class="small"></p>
+
 <button class="primary" id="startButton"
 onclick="startGame()" disabled>
 このキャラクターで開始
 </button>
+
+<button class="title-button"
+onclick="showTitle()">
+タイトルに戻る
+</button>
 </div>
+
 </section>
 
 <!-- ゲーム画面 -->
 <section id="gameScreen" class="hidden">
 
+<!-- セーブ -->
+<div class="panel">
+<div class="grid">
+
+<button class="save-button"
+id="saveButton"
+onclick="manualSave()">
+セーブ
+</button>
+
+<button
+onclick="showTitle()">
+タイトルへ
+</button>
+
+</div>
+
+<p id="gameSaveInfo" class="save-info">
+オートセーブ対応
+</p>
+</div>
+
 <div class="panel">
 <h2 id="chapter"></h2>
 
-<!-- プレイヤーと敵のステータスをまとめる -->
 <div class="status-grid">
 
 <div class="status-card">
 <div class="small">PLAYER</div>
 <div class="status-name" id="playerName"></div>
+
 <p class="small">
 Lv.<span id="level">1</span>
 </p>
@@ -233,13 +308,19 @@ Lv.<span id="level">1</span>
 <p class="small">
 攻撃力：<span id="attackPower">0</span>
 </p>
+
 <p class="small">
 経験値：<span id="exp">0</span>
+</p>
+
+<p class="small">
+MP回復：1ターンにつき5
 </p>
 </div>
 
 <div class="status-card" id="enemyStatus">
 <div class="small">ENEMY</div>
+
 <div class="status-name enemy-name" id="enemyName">
 未登場
 </div>
@@ -263,7 +344,7 @@ Lv.<span id="level">1</span>
 </div>
 </div>
 
-<!-- ログ：ストーリーと戦闘をまとめる -->
+<!-- ログ -->
 <div class="panel">
 <h2>ストーリー・バトルログ</h2>
 <div class="log" id="battleLog"></div>
@@ -294,11 +375,6 @@ onclick="playerAction('favorite')">
 一番好き
 </button>
 
-<button class="danger"
-onclick="playerAction('recover')">
-休憩
-</button>
-
 </div>
 
 <div id="storyCommands">
@@ -312,10 +388,14 @@ onclick="beginBattle()">
 <!-- 結果 -->
 <div class="panel hidden" id="resultPanel">
 <h2 id="resultTitle">勝利！</h2>
-<div id="resultText" style="white-space:pre-line;line-height:1.8"></div>
 
-<button class="primary" style="width:100%;margin-top:12px"
-id="nextButton" onclick="nextStage()">
+<div id="resultText"
+style="white-space:pre-line;line-height:1.8"></div>
+
+<button class="primary"
+style="width:100%;margin-top:12px"
+id="nextButton"
+onclick="nextStage()">
 次へ進む
 </button>
 </div>
@@ -324,6 +404,39 @@ id="nextButton" onclick="nextStage()">
 </main>
 
 <script>
+
+// ==================================
+// 基本設定
+// ==================================
+
+const SAVE_KEY = "ichibanSukiSaveV1";
+const MP_RECOVERY_PER_TURN = 5;
+
+let selected=null;
+let stageIndex=0;
+
+let hp=0,maxHp=0;
+let mp=0,maxMp=0;
+let attackPower=0;
+
+let level=1;
+let exp=0;
+
+let enemyHp=0;
+let enemyMaxHp=0;
+let enemyPower=0;
+
+let busy=false;
+let guarding=false;
+let nullify=false;
+let predicted=false;
+let enemyWeakened=false;
+let favoriteTurns=0;
+let playerSealed=false;
+let battleStarted=false;
+
+let resultState=null;
+let logEntries=[];
 
 // ==================================
 // キャラクターデータ
@@ -506,31 +619,318 @@ const stages = [
 ];
 
 // ==================================
-// ゲーム状態
+// セーブデータ関連
 // ==================================
 
-let selected=null;
-let stageIndex=0;
+function hasSave(){
 
-let hp=0,maxHp=0;
-let mp=0,maxMp=0;
-let attackPower=0;
+ try{
+  return !!localStorage.getItem(SAVE_KEY);
+ }catch(e){
+  return false;
+ }
 
-let level=1;
-let exp=0;
+}
 
-let enemyHp=0;
-let enemyMaxHp=0;
-let enemyPower=0;
+function updateSaveInfo(){
 
-let busy=false;
-let guarding=false;
-let nullify=false;
-let predicted=false;
-let enemyWeakened=false;
-let favoriteTurns=0;
-let playerSealed=false;
-let battleStarted=false;
+ const exists=hasSave();
+
+ document.getElementById("continueButton").disabled=!exists;
+ document.getElementById("deleteSaveButton").disabled=!exists;
+
+ document.getElementById("saveInfo").textContent=
+ exists
+ ?"セーブデータがあります。"
+ :"セーブデータはありません。";
+
+}
+
+function makeSaveData(){
+
+ return {
+
+  version:1,
+
+  selectedId:selected.id,
+  stageIndex,
+
+  hp,maxHp,
+  mp,maxMp,
+  attackPower,
+
+  level,
+  exp,
+
+  enemyHp,
+  enemyMaxHp,
+  enemyPower,
+
+  busy:false,
+  guarding,
+  nullify,
+  predicted,
+  enemyWeakened,
+  favoriteTurns,
+  playerSealed,
+  battleStarted,
+
+  resultState,
+
+  logEntries,
+
+  savedAt:new Date().toLocaleString("ja-JP")
+
+ };
+
+}
+
+function saveGame(showMessage=false){
+
+ if(!selected)return false;
+
+ if(busy){
+  if(showMessage){
+   writeLog("行動処理中はセーブできません。","bad");
+  }
+  return false;
+ }
+
+ try{
+
+  const data=makeSaveData();
+
+  localStorage.setItem(SAVE_KEY,JSON.stringify(data));
+
+  updateSaveInfo();
+
+  document.getElementById("gameSaveInfo").textContent=
+   "保存済み："+data.savedAt;
+
+  if(showMessage){
+   writeLog("ゲームデータを保存した！","good");
+  }
+
+  return true;
+
+ }catch(e){
+
+  if(showMessage){
+   writeLog("セーブに失敗しました。ブラウザの保存容量を確認してください。","bad");
+  }
+
+  return false;
+
+ }
+
+}
+
+function manualSave(){
+
+ if(busy){
+  writeLog("行動処理中はセーブできません。","bad");
+  return;
+ }
+
+ if(saveGame(true)){
+  // セーブ成功
+ }
+
+}
+
+function autoSave(){
+
+ if(!selected)return;
+
+ saveGame(false);
+
+}
+
+function deleteSave(){
+
+ if(!hasSave())return;
+
+ const ok=confirm("セーブデータを削除しますか？");
+
+ if(!ok)return;
+
+ localStorage.removeItem(SAVE_KEY);
+
+ updateSaveInfo();
+
+ alert("セーブデータを削除しました。");
+
+}
+
+function continueGame(){
+
+ let data;
+
+ try{
+
+  const raw=localStorage.getItem(SAVE_KEY);
+
+  if(!raw){
+   alert("セーブデータがありません。");
+   updateSaveInfo();
+   return;
+  }
+
+  data=JSON.parse(raw);
+
+ }catch(e){
+
+  alert("セーブデータを読み込めませんでした。");
+  return;
+
+ }
+
+ const character=characters.find(c=>c.id===data.selectedId);
+
+ if(!character||
+    !Number.isInteger(data.stageIndex)||
+    data.stageIndex<0||
+    data.stageIndex>=stages.length){
+
+  alert("セーブデータが壊れているか、対応していません。");
+  return;
+
+ }
+
+ selected=character;
+
+ stageIndex=data.stageIndex;
+
+ maxHp=data.maxHp;
+ maxMp=data.maxMp;
+
+ hp=data.hp;
+ mp=data.mp;
+
+ attackPower=data.attackPower;
+
+ level=data.level;
+ exp=data.exp;
+
+ enemyHp=data.enemyHp;
+ enemyMaxHp=data.enemyMaxHp;
+ enemyPower=data.enemyPower;
+
+ guarding=!!data.guarding;
+ nullify=!!data.nullify;
+ predicted=!!data.predicted;
+ enemyWeakened=!!data.enemyWeakened;
+ favoriteTurns=data.favoriteTurns||0;
+ playerSealed=!!data.playerSealed;
+
+ battleStarted=!!data.battleStarted;
+ resultState=data.resultState||null;
+
+ logEntries=Array.isArray(data.logEntries)
+  ?data.logEntries:[ ];
+
+ busy=false;
+
+ document.getElementById("titleScreen").classList.add("hidden");
+ document.getElementById("selectScreen").classList.add("hidden");
+ document.getElementById("gameScreen").classList.remove("hidden");
+
+ restoreGameScreen();
+
+ writeLog("セーブデータを読み込みました。","system-log");
+
+ updateStatus();
+
+}
+
+function restoreGameScreen(){
+
+ const s=stages[stageIndex];
+
+ document.getElementById("playerName").textContent=selected.name;
+ document.getElementById("chapter").textContent=s.chapter;
+
+ document.getElementById("skillButton").textContent=
+  selected.skill+"（MP "+selected.cost+"）";
+
+ document.getElementById("favoriteButton")
+  .classList.toggle("hidden",selected.id!=="TY");
+
+ document.getElementById("battleLog").innerHTML="";
+
+ logEntries.forEach(entry=>{
+  renderLogEntry(entry);
+ });
+
+ if(battleStarted||resultState){
+
+  document.getElementById("enemyName").textContent=s.enemy;
+  document.getElementById("enemyDesc").textContent=s.desc;
+
+  updateEnemy();
+
+ }else{
+
+  document.getElementById("enemyName").textContent="未登場";
+  document.getElementById("enemyDesc").textContent="戦闘前";
+  document.getElementById("enemyHp").textContent="---";
+  document.getElementById("enemyBar").style.width="0%";
+  document.getElementById("enemyPowerText").textContent="攻撃力：---";
+
+ }
+
+ document.getElementById("resultPanel").classList.add("hidden");
+ document.getElementById("battleCommands").classList.add("hidden");
+ document.getElementById("storyCommands").classList.add("hidden");
+
+ if(resultState==="win"){
+
+  showVictoryResult(false);
+
+ }else if(resultState==="lose"){
+
+  showDefeatResult();
+
+ }else if(battleStarted){
+
+  document.getElementById("battleCommands").classList.remove("hidden");
+  setBusy(false);
+
+ }else{
+
+  document.getElementById("storyCommands").classList.remove("hidden");
+
+ }
+
+ updateStatus();
+
+}
+
+// ==================================
+// タイトル画面
+// ==================================
+
+function showTitle(){
+
+ if(busy){
+  alert("行動処理中はタイトルに戻れません。");
+  return;
+ }
+
+ document.getElementById("gameScreen").classList.add("hidden");
+ document.getElementById("selectScreen").classList.add("hidden");
+ document.getElementById("titleScreen").classList.remove("hidden");
+
+ updateSaveInfo();
+
+}
+
+function showCharacterSelect(){
+
+ document.getElementById("titleScreen").classList.add("hidden");
+ document.getElementById("selectScreen").classList.remove("hidden");
+
+}
 
 // ==================================
 // キャラクター選択
@@ -584,6 +984,10 @@ function selectCharacter(id){
 
 }
 
+// ==================================
+// ゲーム開始
+// ==================================
+
 function startGame(){
 
  if(!selected)return;
@@ -599,6 +1003,21 @@ function startGame(){
  level=1;
  exp=0;
  stageIndex=0;
+
+ enemyHp=0;
+ enemyMaxHp=0;
+ enemyPower=0;
+
+ busy=false;
+ guarding=false;
+ nullify=false;
+ predicted=false;
+ enemyWeakened=false;
+ favoriteTurns=0;
+ playerSealed=false;
+ battleStarted=false;
+ resultState=null;
+ logEntries=[];
 
  document.getElementById("selectScreen").classList.add("hidden");
  document.getElementById("gameScreen").classList.remove("hidden");
@@ -625,10 +1044,10 @@ function updateStatus(){
  mp+"/"+maxMp;
 
  document.getElementById("hpBar").style.width=
- (hp/maxHp*100)+"%";
+ Math.max(0,hp/maxHp*100)+"%";
 
  document.getElementById("mpBar").style.width=
- (mp/maxMp*100)+"%";
+ Math.max(0,mp/maxMp*100)+"%";
 
  document.getElementById("level").textContent=level;
  document.getElementById("exp").textContent=exp;
@@ -661,30 +1080,37 @@ function updateEnemy(){
 
 }
 
-function writeLog(message,type=""){
+// ==================================
+// ログ
+// ==================================
+
+function renderLogEntry(entry){
 
  const log=document.getElementById("battleLog");
 
  const p=document.createElement("p");
- p.textContent=message;
+ p.textContent=entry.message;
 
- if(type)p.classList.add(type);
+ if(entry.type)p.classList.add(entry.type);
 
  log.appendChild(p);
  log.scrollTop=log.scrollHeight;
 
 }
 
+function writeLog(message,type=""){
+
+ const entry={message,type};
+
+ logEntries.push(entry);
+
+ renderLogEntry(entry);
+
+}
+
 function writeStory(message){
 
- const log=document.getElementById("battleLog");
-
- const p=document.createElement("p");
- p.textContent=message;
- p.className="story-log";
-
- log.appendChild(p);
- log.scrollTop=log.scrollHeight;
+ writeLog(message,"story-log");
 
 }
 
@@ -699,6 +1125,8 @@ function setBusy(value){
  document.querySelectorAll("#battleCommands button")
   .forEach(b=>b.disabled=value);
 
+ document.getElementById("saveButton").disabled=value;
+
 }
 
 // ==================================
@@ -710,6 +1138,7 @@ function loadStage(){
  const s=stages[stageIndex];
 
  battleStarted=false;
+ resultState=null;
 
  guarding=false;
  nullify=false;
@@ -733,17 +1162,16 @@ function loadStage(){
  document.getElementById("resultPanel").classList.add("hidden");
 
  document.getElementById("battleLog").innerHTML="";
-
- document.getElementById("skillButton").textContent=
- selected.skill+"（MP "+selected.cost+"）";
+ logEntries=[];
 
  updateStatus();
 
- // ストーリーをログに追加
  writeLog("―― "+s.chapter+" ――","system-log");
  writeStory(s.story);
 
  writeLog("ストーリーを読んだら、戦闘を開始しよう。");
+
+ autoSave();
 
 }
 
@@ -762,6 +1190,7 @@ function beginBattle(){
  enemyPower=s.power;
 
  battleStarted=true;
+ resultState=null;
 
  document.getElementById("enemyName").textContent=s.enemy;
  document.getElementById("enemyDesc").textContent=s.desc;
@@ -774,6 +1203,30 @@ function beginBattle(){
  writeLog("―― BATTLE START ――","system-log");
  writeLog(s.enemy+"が現れた！","bad");
  writeLog("どちらが先に動くか分からない……");
+
+ autoSave();
+
+}
+
+// ==================================
+// ターン終了時のMP回復
+// ==================================
+
+function recoverTurnMP(){
+
+ const before=mp;
+
+ mp=Math.min(maxMp,mp+MP_RECOVERY_PER_TURN);
+
+ const recovered=mp-before;
+
+ if(recovered>0){
+
+  writeLog("ターン経過によりMPが"+recovered+"回復！","good");
+
+ }
+
+ updateStatus();
 
 }
 
@@ -793,13 +1246,6 @@ async function playerAction(type){
  if(cost>0&&mp<cost){
 
   writeLog("MPが足りない！","bad");
-  return;
-
- }
-
- if(type==="recover"&&mp>=maxMp&&hp>=maxHp){
-
-  writeLog("これ以上回復できない！");
   return;
 
  }
@@ -833,7 +1279,7 @@ async function playerAction(type){
 
  }
 
- // 黒木の能力で次の行動を封じられている場合
+ // 行動封じ
  if(playerSealed){
 
   playerSealed=false;
@@ -848,14 +1294,16 @@ async function playerAction(type){
 
  updateStatus();
 
- await delay(600);
-
+ // 敵を倒した場合
  if(enemyHp<=0){
 
+  recoverTurnMP();
   await victory();
   return;
 
  }
+
+ await delay(600);
 
  // プレイヤーが先攻なら敵が後攻
  if(playerFirst){
@@ -873,8 +1321,15 @@ async function playerAction(type){
 
  }
 
+ // ターン終了時のMP回復
+ recoverTurnMP();
+
  updateStatus();
+
  setBusy(false);
+
+ // ターン終了後にオートセーブ
+ autoSave();
 
 }
 
@@ -926,19 +1381,6 @@ async function executePlayerAction(type){
   guarding=true;
 
   writeLog(selected.name+"は防御態勢に入った！");
-
- }
-
- if(type==="recover"){
-
-  const recoverHp=20;
-  const recoverMp=15;
-
-  hp=Math.min(maxHp,hp+recoverHp);
-  mp=Math.min(maxMp,mp+recoverMp);
-
-  writeLog("休憩した。HPとMPが回復！","good");
-  updateStatus();
 
  }
 
@@ -1100,7 +1542,6 @@ async function enemyTurn(){
 
  let damage=enemyPower+Math.floor(Math.random()*6);
 
- // 敵の特殊能力
  switch(stageIndex){
 
   case 0:
@@ -1166,7 +1607,6 @@ async function enemyTurn(){
 
  }
 
- // 松浦の弱体化
  if(enemyWeakened){
 
   damage=Math.floor(damage*0.5);
@@ -1176,7 +1616,6 @@ async function enemyTurn(){
 
  }
 
- // 防御・回避・無効化
  if(nullify){
 
   damage=0;
@@ -1202,7 +1641,6 @@ async function enemyTurn(){
 
  }
 
- // 一番好きの防御効果
  if(damage>0&&favoriteTurns>0){
 
   damage=Math.ceil(damage*0.5);
@@ -1219,7 +1657,6 @@ async function enemyTurn(){
 
  }
 
- // 一番好きの効果時間を減らす
  if(favoriteTurns>0){
 
   favoriteTurns--;
@@ -1255,6 +1692,7 @@ async function victory(){
 
  setBusy(true);
  battleStarted=false;
+ resultState="win";
 
  await delay(500);
 
@@ -1277,23 +1715,37 @@ async function victory(){
   hp=Math.min(maxHp,hp+30);
   mp=Math.min(maxMp,mp+20);
 
-  writeLog("レベルアップ！","gold");
-  writeLog("Lv."+level+"になった！","gold");
+  writeLog("レベルアップ！","good");
+  writeLog("Lv."+level+"になった！","good");
 
  }
 
  hp=Math.min(maxHp,hp+20);
- mp=Math.min(maxMp,mp+10);
 
  updateStatus();
 
  document.getElementById("battleCommands").classList.add("hidden");
 
+ showVictoryResult(true);
+
+ // 勝利状態をオートセーブ
+ setBusy(false);
+ autoSave();
+
+}
+
+function showVictoryResult(addLog){
+
+ if(addLog){
+
+  // 勝利メッセージはログに追加済み
+ }
+
  document.getElementById("resultTitle").textContent="勝利！";
 
  document.getElementById("resultText").textContent=
  stages[stageIndex].win+
- "\n\nHPとMPが少し回復した。";
+ "\n\nHPが20回復した。";
 
  document.getElementById("resultPanel").classList.remove("hidden");
 
@@ -1312,8 +1764,17 @@ function defeat(){
 
  setBusy(true);
  battleStarted=false;
+ resultState="lose";
 
  document.getElementById("battleCommands").classList.add("hidden");
+
+ showDefeatResult();
+
+ autoSave();
+
+}
+
+function showDefeatResult(){
 
  document.getElementById("resultTitle").textContent="敗北……";
 
@@ -1332,10 +1793,12 @@ function defeat(){
 
 function nextStage(){
 
- if(hp<=0){
+ if(resultState==="lose"||hp<=0){
 
   hp=maxHp;
   mp=maxMp;
+
+  resultState=null;
 
   loadStage();
 
@@ -1345,7 +1808,10 @@ function nextStage(){
 
  if(stageIndex===stages.length-1){
 
-  location.reload();
+  localStorage.removeItem(SAVE_KEY);
+  updateSaveInfo();
+
+  showTitle();
 
   return;
 
@@ -1354,7 +1820,6 @@ function nextStage(){
  stageIndex++;
 
  hp=Math.min(maxHp,hp+25);
- mp=Math.min(maxMp,mp+15);
 
  loadStage();
 
@@ -1365,6 +1830,7 @@ function nextStage(){
 // ==================================
 
 createCharacterCards();
+updateSaveInfo();
 
 </script>
 </body>
