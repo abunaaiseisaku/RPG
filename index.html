@@ -1,0 +1,479 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>星明かりの冒険</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;padding:16px;
+  background:#101827;color:white;
+  font-family:sans-serif;
+}
+main{max-width:700px;margin:auto}
+h1{text-align:center;color:#ffd166}
+.panel{
+  background:#202f48;
+  border:1px solid #506482;
+  border-radius:14px;
+  padding:16px;margin:12px 0;
+}
+.stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.bar{
+  background:#111;
+  height:10px;border-radius:10px;
+  overflow:hidden;margin-top:5px;
+}
+.fill{height:100%;transition:.2s}
+.hp{background:#ff6262}
+.mp{background:#5da9ff}
+.xp{background:#ffd166}
+button{
+  background:#354e70;color:white;
+  border:1px solid #7189a8;
+  border-radius:9px;padding:13px;
+  font-size:15px;font-weight:bold;
+  cursor:pointer;
+}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.4}
+.actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;margin-top:14px;
+}
+.primary{background:#956523}
+.enemy{text-align:center;font-size:65px}
+.enemy-name{text-align:center;font-size:20px}
+#log{
+  height:130px;overflow:auto;
+  background:#101827;
+  padding:10px;border-radius:8px;
+  font-size:13px;
+}
+#log p{margin:5px 0}
+</style>
+</head>
+<body>
+<main>
+
+<h1>🌙 星明かりの冒険</h1>
+
+<div class="panel stats">
+  <div>
+    LEVEL <b id="level">1</b>
+    <p id="gold">💰 0 G</p>
+  </div>
+  <div>
+    HP <b id="hpText"></b>
+    <div class="bar"><div id="hpBar" class="fill hp"></div></div>
+    <br>
+    MP <b id="mpText"></b>
+    <div class="bar"><div id="mpBar" class="fill mp"></div></div>
+  </div>
+  <div>
+    EXP <b id="xpText"></b>
+    <div class="bar"><div id="xpBar" class="fill xp"></div></div>
+  </div>
+  <div>
+    🧪 回復薬 <b id="potions"></b>
+    <br><br>
+    ✨ 星のかけら <b id="shards"></b>/3
+  </div>
+</div>
+
+<div class="panel">
+  <h2 id="place">🏡 はじまりの村</h2>
+  <p id="scene">
+    村長から依頼を受けた。
+    森に散らばった星のかけらを3つ集めよう！
+  </p>
+  <div id="enemyArea"></div>
+  <div class="actions" id="actions"></div>
+</div>
+
+<div class="panel">
+  <h3>📜 冒険の記録</h3>
+  <div id="log"></div>
+</div>
+
+<div class="panel">
+  <button onclick="save()">💾 セーブ</button>
+  <button onclick="load()">📂 ロード</button>
+</div>
+
+</main>
+
+<script>
+let player={
+ level:1,
+ hp:30,maxHp:30,
+ mp:10,maxMp:10,
+ xp:0,nextXp:20,
+ gold:20,
+ potion:2,
+ shard:0
+};
+
+let enemy=null;
+let guarding=false;
+let bossDefeated=false;
+
+const enemies=[
+ {name:"スライム",emoji:"🟢",hp:16,atk:5,xp:8,gold:5},
+ {name:"コウモリ",emoji:"🦇",hp:22,atk:7,xp:12,gold:8},
+ {name:"ゴブリン",emoji:"👺",hp:30,atk:9,xp:17,gold:12},
+ {name:"オオカミ",emoji:"🐺",hp:38,atk:11,xp:22,gold:15}
+];
+
+function log(text){
+ let p=document.createElement("p");
+ p.textContent=text;
+ document.getElementById("log").prepend(p);
+}
+
+function update(){
+ let p=player;
+
+ document.getElementById("level").textContent=p.level;
+ document.getElementById("gold").textContent="💰 "+p.gold+" G";
+
+ document.getElementById("hpText").textContent=
+ p.hp+"/"+p.maxHp;
+ document.getElementById("mpText").textContent=
+ p.mp+"/"+p.maxMp;
+ document.getElementById("xpText").textContent=
+ p.xp+"/"+p.nextXp;
+
+ document.getElementById("hpBar").style.width=
+ (p.hp/p.maxHp*100)+"%";
+ document.getElementById("mpBar").style.width=
+ (p.mp/p.maxMp*100)+"%";
+ document.getElementById("xpBar").style.width=
+ (p.xp/p.nextXp*100)+"%";
+
+ document.getElementById("potions").textContent=p.potion;
+ document.getElementById("shards").textContent=p.shard;
+}
+
+function show(place,scene,buttons){
+ document.getElementById("place").textContent=place;
+ document.getElementById("scene").textContent=scene;
+ document.getElementById("enemyArea").innerHTML="";
+
+ let area=document.getElementById("actions");
+ area.innerHTML="";
+
+ buttons.forEach(b=>{
+  let btn=document.createElement("button");
+  btn.textContent=b.name;
+  btn.onclick=b.action;
+  if(b.primary)btn.className="primary";
+  area.appendChild(btn);
+ });
+
+ update();
+}
+
+function village(){
+ show("🏡 はじまりの村",
+ "村長「森で星のかけらを3つ集めてくれ！」",
+ [
+  {name:"🌲 森へ行く",action:forest,primary:true},
+  {name:"🧪 回復薬を買う (10G)",action:buyPotion},
+  {name:"🛏️ 宿屋 (5G)",action:inn},
+  {name:"🏛️ 星の神殿",action:temple}
+ ]);
+}
+
+function buyPotion(){
+ if(player.gold<10){
+  log("ゴールドが足りない！");
+  return;
+ }
+ player.gold-=10;
+ player.potion++;
+ log("回復薬を購入した！");
+ village();
+}
+
+function inn(){
+ if(player.gold<5){
+  log("お金が足りない！");
+  return;
+ }
+ player.gold-=5;
+ player.hp=player.maxHp;
+ player.mp=player.maxMp;
+ log("HPとMPが全回復した！");
+ village();
+}
+
+function forest(){
+ show("🌲 迷いの森",
+ "森の奥から魔物の気配がする。",
+ [
+  {name:"👣 探索する",action:encounter,primary:true},
+  {name:"🏡 村に戻る",action:village}
+ ]);
+}
+
+function encounter(){
+ let e=JSON.parse(JSON.stringify(
+  enemies[Math.floor(Math.random()*enemies.length)]
+ ));
+
+ if(player.shard<3 && Math.random()<0.35){
+  e={
+   name:"星の番人",emoji:"🗿",
+   hp:35+player.level*5,
+   atk:9+player.level,
+   xp:25,gold:20,shard:true
+  };
+ }
+
+ e.hp+=player.level*2;
+ e.maxHp=e.hp;
+ enemy=e;
+ battle();
+}
+
+function battle(){
+ document.getElementById("place").textContent="⚔️ 戦闘中";
+
+ document.getElementById("scene").textContent=
+ "魔物が現れた！行動を選ぼう。";
+
+ document.getElementById("enemyArea").innerHTML=`
+ <div class="enemy">${enemy.emoji}</div>
+ <div class="enemy-name">${enemy.name}</div>
+ <p style="text-align:center">
+ HP ${Math.max(0,enemy.hp)} / ${enemy.maxHp}
+ </p>
+ <div class="bar">
+ <div class="fill hp" style="width:${Math.max(0,enemy.hp)/enemy.maxHp*100}%"></div>
+ </div>`;
+
+ let area=document.getElementById("actions");
+ area.innerHTML="";
+
+ addButton("⚔️ 攻撃",attack,true);
+ addButton("🔥 ファイア (MP4)",magic);
+ addButton("🛡️ 防御",defend);
+ addButton("🧪 回復薬",usePotion);
+ addButton("🏃 逃げる",run);
+
+ update();
+}
+
+function addButton(name,action,primary=false){
+ let b=document.createElement("button");
+ b.textContent=name;
+ if(primary)b.className="primary";
+ b.onclick=action;
+ document.getElementById("actions").appendChild(b);
+}
+
+function attack(){
+ let damage=6+player.level*3+
+ Math.floor(Math.random()*6);
+
+ enemy.hp-=damage;
+ log("攻撃！ "+damage+" ダメージ！");
+ finishCheck();
+}
+
+function magic(){
+ if(player.mp<4){
+  log("MPが足りない！");
+  return;
+ }
+
+ player.mp-=4;
+ let damage=15+player.level*4+
+ Math.floor(Math.random()*6);
+
+ enemy.hp-=damage;
+ log("ファイア！ "+damage+" ダメージ！");
+ finishCheck();
+}
+
+function defend(){
+ guarding=true;
+ log("防御態勢をとった！");
+ enemyTurn();
+}
+
+function usePotion(){
+ if(player.potion<=0){
+  log("回復薬がない！");
+  return;
+ }
+
+ if(player.hp===player.maxHp){
+  log("HPは満タンだ！");
+  return;
+ }
+
+ player.potion--;
+ let heal=Math.min(20,player.maxHp-player.hp);
+ player.hp+=heal;
+
+ log("HPが"+heal+"回復した！");
+ enemyTurn();
+}
+
+function run(){
+ if(Math.random()<0.7){
+  log("逃げ切った！");
+  enemy=null;
+  forest();
+ }else{
+  log("逃げられなかった！");
+  enemyTurn();
+ }
+}
+
+function enemyTurn(){
+ if(!enemy)return;
+
+ let damage=Math.max(1,
+ enemy.atk-Math.floor(player.level*.7));
+
+ if(guarding){
+  damage=Math.ceil(damage*.35);
+  guarding=false;
+ }
+
+ player.hp-=damage;
+ log(enemy.name+"の攻撃！ "+damage+" ダメージ！");
+
+ if(player.hp<=0){
+  player.hp=1;
+  player.gold=Math.max(0,player.gold-5);
+  enemy=null;
+  log("倒れて村に戻された……");
+  village();
+  return;
+ }
+
+ battle();
+}
+
+function finishCheck(){
+ if(enemy.hp>0){
+  enemyTurn();
+  return;
+ }
+
+ let e=enemy;
+ enemy=null;
+
+ log(e.name+"を倒した！");
+ player.xp+=e.xp;
+ player.gold+=e.gold;
+
+ if(e.shard && player.shard<3){
+  player.shard++;
+  log("✨ 星のかけらを入手！");
+ }
+
+ while(player.xp>=player.nextXp){
+  player.xp-=player.nextXp;
+  player.level++;
+  player.nextXp=Math.floor(player.nextXp*1.5);
+  player.maxHp+=8;
+  player.maxMp+=3;
+  player.hp=player.maxHp;
+  player.mp=player.maxMp;
+  log("LEVEL UP！ レベル"+player.level+"！");
+ }
+
+ update();
+ forest();
+}
+
+function temple(){
+ if(player.shard<3){
+  show("🏛️ 星の神殿",
+   "扉は閉ざされている。星のかけらがあと"+
+   (3-player.shard)+"個必要だ。",
+   [{name:"森へ戻る",action:forest,primary:true}]);
+  return;
+ }
+
+ if(bossDefeated){
+  show("🌟 星の神殿",
+   "世界に平和が戻った！",
+   [{name:"村へ戻る",action:village}]);
+  return;
+ }
+
+ enemy={
+  name:"星喰いドラゴン",
+  emoji:"🐉",
+  hp:120+player.level*10,
+  maxHp:120+player.level*10,
+  atk:14+player.level*2,
+  xp:100,gold:100,boss:true
+ };
+
+ battle();
+ document.getElementById("scene").textContent=
+ "最終ボス、星喰いドラゴンが現れた！";
+}
+
+const originalFinish=finishCheck;
+
+finishCheck=function(){
+ if(enemy && enemy.boss && enemy.hp<=0){
+  bossDefeated=true;
+  player.xp+=100;
+  player.gold+=100;
+  enemy=null;
+  show("🏆 エンディング",
+   "ドラゴンを倒した！星々が夜空に輝き、世界に平和が戻った！",
+   [{name:"村へ戻る",action:village,primary:true}]);
+  log("おめでとう！ゲームクリア！");
+  return;
+ }
+ originalFinish();
+};
+
+function save(){
+ localStorage.setItem("rpgSave",JSON.stringify({
+  player,bossDefeated
+ }));
+ log("セーブしました！");
+}
+
+function load(){
+ let data=localStorage.getItem("rpgSave");
+ if(!data){
+  log("セーブデータがありません！");
+  return;
+ }
+
+ try{
+  let d=JSON.parse(data);
+  player=d.player;
+  bossDefeated=d.bossDefeated;
+  enemy=null;
+  log("ロードしました！");
+  village();
+ }catch(e){
+  log("ロードに失敗しました！");
+ }
+}
+
+village();
+log("冒険が始まった！");
+</script>
+</body>
+</html>
