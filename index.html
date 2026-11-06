@@ -1,479 +1,232 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>星明かりの冒険</title>
+<title>秘密の夜のチャット</title>
 <style>
 *{box-sizing:border-box}
 body{
-  margin:0;padding:16px;
-  background:#101827;color:white;
+  margin:0;background:#17121b;color:white;
   font-family:sans-serif;
 }
-main{max-width:700px;margin:auto}
-h1{text-align:center;color:#ffd166}
-.panel{
-  background:#202f48;
-  border:1px solid #506482;
-  border-radius:14px;
-  padding:16px;margin:12px 0;
+.app{
+  max-width:500px;margin:auto;height:100dvh;
+  display:flex;flex-direction:column;
+  background:#211a27;
 }
-.stats{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
+header{
+  padding:16px;background:#302336;
+  text-align:center;font-weight:bold;
+}
+.profile{
+  padding:12px;text-align:center;
+  background:#281e30;
+}
+.name{font-size:21px;color:#ff9dc9}
+.status{font-size:12px;color:#aaa;margin-top:5px}
+.meter{
+  height:8px;background:#514252;
+  border-radius:10px;margin-top:10px;overflow:hidden;
 }
 .bar{
-  background:#111;
-  height:10px;border-radius:10px;
-  overflow:hidden;margin-top:5px;
+  height:100%;width:20%;background:#f16ba9;
+  transition:width .4s;
 }
-.fill{height:100%;transition:.2s}
-.hp{background:#ff6262}
-.mp{background:#5da9ff}
-.xp{background:#ffd166}
-button{
-  background:#354e70;color:white;
-  border:1px solid #7189a8;
-  border-radius:9px;padding:13px;
-  font-size:15px;font-weight:bold;
-  cursor:pointer;
+.chat{
+  flex:1;overflow-y:auto;padding:15px;
 }
-button:active{transform:scale(.97)}
-button:disabled{opacity:.4}
-.actions{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:9px;margin-top:14px;
+.msg{
+  max-width:85%;padding:12px 15px;
+  border-radius:15px;margin:12px 0;
+  line-height:1.6;white-space:pre-wrap;
+  animation:appear .3s;
 }
-.primary{background:#956523}
-.enemy{text-align:center;font-size:65px}
-.enemy-name{text-align:center;font-size:20px}
-#log{
-  height:130px;overflow:auto;
-  background:#101827;
-  padding:10px;border-radius:8px;
-  font-size:13px;
+@keyframes appear{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
 }
-#log p{margin:5px 0}
+.left{background:#49364e;margin-right:auto}
+.right{background:#a33e77;margin-left:auto}
+.label{font-size:11px;color:#ffafd5;margin-bottom:4px}
+.choices{padding:12px;background:#302336}
+.choice{
+  display:block;width:100%;padding:14px;
+  margin:7px 0;border:1px solid #b75b91;
+  border-radius:12px;background:#432b40;
+  color:white;font-size:14px;
+}
+.choice:active{background:#85436b}
+.choice:disabled{opacity:.5}
+footer{text-align:center;padding:8px;color:#aaa;font-size:11px}
 </style>
 </head>
 <body>
-<main>
+<div class="app">
+<header>🌙 秘密の夜のチャット</header>
 
-<h1>🌙 星明かりの冒険</h1>
-
-<div class="panel stats">
-  <div>
-    LEVEL <b id="level">1</b>
-    <p id="gold">💰 0 G</p>
-  </div>
-  <div>
-    HP <b id="hpText"></b>
-    <div class="bar"><div id="hpBar" class="fill hp"></div></div>
-    <br>
-    MP <b id="mpText"></b>
-    <div class="bar"><div id="mpBar" class="fill mp"></div></div>
-  </div>
-  <div>
-    EXP <b id="xpText"></b>
-    <div class="bar"><div id="xpBar" class="fill xp"></div></div>
-  </div>
-  <div>
-    🧪 回復薬 <b id="potions"></b>
-    <br><br>
-    ✨ 星のかけら <b id="shards"></b>/3
+<div class="profile">
+  <div class="name">玲奈 ♡</div>
+  <div class="status" id="status">あなたとの距離：知り合い</div>
+  <div class="meter"><div class="bar" id="bar"></div></div>
+  <div style="font-size:12px;margin-top:5px">
+    好感度：<span id="score">20</span> / 100
   </div>
 </div>
 
-<div class="panel">
-  <h2 id="place">🏡 はじまりの村</h2>
-  <p id="scene">
-    村長から依頼を受けた。
-    森に散らばった星のかけらを3つ集めよう！
-  </p>
-  <div id="enemyArea"></div>
-  <div class="actions" id="actions"></div>
+<div class="chat" id="chat">
+  <div class="msg left">
+    <div class="label">玲奈</div>
+    こんばんは♡
+    こんな時間まで起きてるなんて珍しいね。
+    私？ちょうどあなたに連絡しようと思ってたところ♪
+  </div>
 </div>
 
-<div class="panel">
-  <h3>📜 冒険の記録</h3>
-  <div id="log"></div>
+<div class="choices" id="choices"></div>
+<footer>この物語はフィクションです</footer>
 </div>
-
-<div class="panel">
-  <button onclick="save()">💾 セーブ</button>
-  <button onclick="load()">📂 ロード</button>
-</div>
-
-</main>
 
 <script>
-let player={
- level:1,
- hp:30,maxHp:30,
- mp:10,maxMp:10,
- xp:0,nextXp:20,
- gold:20,
- potion:2,
- shard:0
-};
+let affection=20;
+let step=0;
+let ended=false;
 
-let enemy=null;
-let guarding=false;
-let bossDefeated=false;
+const chat=document.getElementById("chat");
+const choices=document.getElementById("choices");
 
-const enemies=[
- {name:"スライム",emoji:"🟢",hp:16,atk:5,xp:8,gold:5},
- {name:"コウモリ",emoji:"🦇",hp:22,atk:7,xp:12,gold:8},
- {name:"ゴブリン",emoji:"👺",hp:30,atk:9,xp:17,gold:12},
- {name:"オオカミ",emoji:"🐺",hp:38,atk:11,xp:22,gold:15}
+const story=[
+{
+ text:"ふふ、そう言ってくれると嬉しいな♡\nねえ、私のことどう思ってる？",
+ options:[
+ ["かわいいと思ってるよ♡",15,
+ "えっ……急にそんなこと言うの？照れるじゃん♡"],
+ ["話していて楽しいよ",10,
+ "本当？私もあなたと話すの好きだよ♪"],
+ ["まだよく分からないかな",0,
+ "そっか。じゃあ、これから知っていってね！"]
+ ]
+},
+{
+ text:"ねえ、もし今私が隣にいたらどうする？",
+ options:[
+ ["手をつないでみたい",15,
+ "……想像したら、なんだかドキドキしてきた♡"],
+ ["一緒に映画を見たい",10,
+ "いいね！二人でゆっくり過ごしたいな♪"],
+ ["普通におしゃべりする",5,
+ "ふふ、それも楽しそうだね！"]
+ ]
+},
+{
+ text:"実はね、今日は少し寂しかったんだ。\nあなたと話せてよかった。",
+ options:[
+ ["いつでも話を聞くよ",15,
+ "ありがとう……あなたって本当に優しいね♡"],
+ ["今度一緒に出かけよう",15,
+ "えっ！それってデートのお誘い？♡"],
+ ["元気出して！",5,
+ "ふふ、ありがとう！元気になったよ！"]
+ ]
+},
+{
+ text:"最後にひとつ聞いてもいい？\n私ともっと仲良くなりたい？",
+ options:[
+ ["もちろん。もっと一緒にいたい",20,
+ "……嬉しい。私もあなたともっと一緒にいたい♡"],
+ ["ゆっくり仲良くなろう",10,
+ "うん！焦らずに、二人のペースでね♪"],
+ ["まだ考え中かな",0,
+ "そっか！これからもっとお互いを知ろうね。"]
+ ]
+}
 ];
 
-function log(text){
- let p=document.createElement("p");
- p.textContent=text;
- document.getElementById("log").prepend(p);
-}
-
 function update(){
- let p=player;
+ document.getElementById("score").textContent=affection;
+ document.getElementById("bar").style.width=affection+"%";
 
- document.getElementById("level").textContent=p.level;
- document.getElementById("gold").textContent="💰 "+p.gold+" G";
+ let status="知り合い";
+ if(affection>=80)status="特別な存在♡";
+ else if(affection>=60)status="かなり親しい";
+ else if(affection>=40)status="友達以上？";
 
- document.getElementById("hpText").textContent=
- p.hp+"/"+p.maxHp;
- document.getElementById("mpText").textContent=
- p.mp+"/"+p.maxMp;
- document.getElementById("xpText").textContent=
- p.xp+"/"+p.nextXp;
-
- document.getElementById("hpBar").style.width=
- (p.hp/p.maxHp*100)+"%";
- document.getElementById("mpBar").style.width=
- (p.mp/p.maxMp*100)+"%";
- document.getElementById("xpBar").style.width=
- (p.xp/p.nextXp*100)+"%";
-
- document.getElementById("potions").textContent=p.potion;
- document.getElementById("shards").textContent=p.shard;
+ document.getElementById("status").textContent=
+ "あなたとの距離："+status;
 }
 
-function show(place,scene,buttons){
- document.getElementById("place").textContent=place;
- document.getElementById("scene").textContent=scene;
- document.getElementById("enemyArea").innerHTML="";
-
- let area=document.getElementById("actions");
- area.innerHTML="";
-
- buttons.forEach(b=>{
-  let btn=document.createElement("button");
-  btn.textContent=b.name;
-  btn.onclick=b.action;
-  if(b.primary)btn.className="primary";
-  area.appendChild(btn);
- });
-
- update();
+function message(who,text){
+ const div=document.createElement("div");
+ div.className="msg "+(who==="me"?"right":"left");
+ div.textContent=text;
+ chat.appendChild(div);
+ chat.scrollTop=chat.scrollHeight;
 }
 
-function village(){
- show("🏡 はじまりの村",
- "村長「森で星のかけらを3つ集めてくれ！」",
- [
-  {name:"🌲 森へ行く",action:forest,primary:true},
-  {name:"🧪 回復薬を買う (10G)",action:buyPotion},
-  {name:"🛏️ 宿屋 (5G)",action:inn},
-  {name:"🏛️ 星の神殿",action:temple}
- ]);
-}
+function showOptions(){
+ choices.innerHTML="";
+ const current=story[step];
 
-function buyPotion(){
- if(player.gold<10){
-  log("ゴールドが足りない！");
-  return;
- }
- player.gold-=10;
- player.potion++;
- log("回復薬を購入した！");
- village();
-}
+ current.options.forEach((option)=>{
+  const button=document.createElement("button");
+  button.className="choice";
+  button.textContent=option[0];
 
-function inn(){
- if(player.gold<5){
-  log("お金が足りない！");
-  return;
- }
- player.gold-=5;
- player.hp=player.maxHp;
- player.mp=player.maxMp;
- log("HPとMPが全回復した！");
- village();
-}
+  button.onclick=()=>{
+   if(ended)return;
 
-function forest(){
- show("🌲 迷いの森",
- "森の奥から魔物の気配がする。",
- [
-  {name:"👣 探索する",action:encounter,primary:true},
-  {name:"🏡 村に戻る",action:village}
- ]);
-}
+   message("me",option[0]);
+   affection=Math.max(0,Math.min(100,affection+option[1]));
+   update();
 
-function encounter(){
- let e=JSON.parse(JSON.stringify(
-  enemies[Math.floor(Math.random()*enemies.length)]
- ));
+   choices.innerHTML="";
 
- if(player.shard<3 && Math.random()<0.35){
-  e={
-   name:"星の番人",emoji:"🗿",
-   hp:35+player.level*5,
-   atk:9+player.level,
-   xp:25,gold:20,shard:true
+   setTimeout(()=>{
+    message("her",option[2]);
+    step++;
+
+    if(step>=story.length){
+      setTimeout(ending,800);
+    }else{
+      setTimeout(()=>{
+       message("her",story[step].text);
+       showOptions();
+      },900);
+    }
+   },1000);
   };
- }
-
- e.hp+=player.level*2;
- e.maxHp=e.hp;
- enemy=e;
- battle();
+  choices.appendChild(button);
+ });
 }
 
-function battle(){
- document.getElementById("place").textContent="⚔️ 戦闘中";
+function ending(){
+ ended=true;
+ let result;
+ let title;
 
- document.getElementById("scene").textContent=
- "魔物が現れた！行動を選ぼう。";
-
- document.getElementById("enemyArea").innerHTML=`
- <div class="enemy">${enemy.emoji}</div>
- <div class="enemy-name">${enemy.name}</div>
- <p style="text-align:center">
- HP ${Math.max(0,enemy.hp)} / ${enemy.maxHp}
- </p>
- <div class="bar">
- <div class="fill hp" style="width:${Math.max(0,enemy.hp)/enemy.maxHp*100}%"></div>
- </div>`;
-
- let area=document.getElementById("actions");
- area.innerHTML="";
-
- addButton("⚔️ 攻撃",attack,true);
- addButton("🔥 ファイア (MP4)",magic);
- addButton("🛡️ 防御",defend);
- addButton("🧪 回復薬",usePotion);
- addButton("🏃 逃げる",run);
-
- update();
-}
-
-function addButton(name,action,primary=false){
- let b=document.createElement("button");
- b.textContent=name;
- if(primary)b.className="primary";
- b.onclick=action;
- document.getElementById("actions").appendChild(b);
-}
-
-function attack(){
- let damage=6+player.level*3+
- Math.floor(Math.random()*6);
-
- enemy.hp-=damage;
- log("攻撃！ "+damage+" ダメージ！");
- finishCheck();
-}
-
-function magic(){
- if(player.mp<4){
-  log("MPが足りない！");
-  return;
- }
-
- player.mp-=4;
- let damage=15+player.level*4+
- Math.floor(Math.random()*6);
-
- enemy.hp-=damage;
- log("ファイア！ "+damage+" ダメージ！");
- finishCheck();
-}
-
-function defend(){
- guarding=true;
- log("防御態勢をとった！");
- enemyTurn();
-}
-
-function usePotion(){
- if(player.potion<=0){
-  log("回復薬がない！");
-  return;
- }
-
- if(player.hp===player.maxHp){
-  log("HPは満タンだ！");
-  return;
- }
-
- player.potion--;
- let heal=Math.min(20,player.maxHp-player.hp);
- player.hp+=heal;
-
- log("HPが"+heal+"回復した！");
- enemyTurn();
-}
-
-function run(){
- if(Math.random()<0.7){
-  log("逃げ切った！");
-  enemy=null;
-  forest();
+ if(affection>=80){
+  title="♡ 特別な関係エンド ♡";
+  result="「ねえ……今度はチャットじゃなくて、直接会いたいな。あなたと過ごす時間が、私の一番の楽しみになっちゃった♡」";
+ }else if(affection>=55){
+  title="♡ 恋の予感エンド ♡";
+  result="「もっとあなたのことを知りたいな。これからもいっぱいお話ししようね！」";
  }else{
-  log("逃げられなかった！");
-  enemyTurn();
+  title="🌙 友達エンド";
+  result="「今日は楽しかったよ！またいつでも連絡してね♪」";
  }
+
+ message("her",title+"\n"+result);
+
+ choices.innerHTML="";
+ const button=document.createElement("button");
+ button.className="choice";
+ button.textContent="もう一度遊ぶ";
+ button.onclick=()=>location.reload();
+ choices.appendChild(button);
 }
 
-function enemyTurn(){
- if(!enemy)return;
-
- let damage=Math.max(1,
- enemy.atk-Math.floor(player.level*.7));
-
- if(guarding){
-  damage=Math.ceil(damage*.35);
-  guarding=false;
- }
-
- player.hp-=damage;
- log(enemy.name+"の攻撃！ "+damage+" ダメージ！");
-
- if(player.hp<=0){
-  player.hp=1;
-  player.gold=Math.max(0,player.gold-5);
-  enemy=null;
-  log("倒れて村に戻された……");
-  village();
-  return;
- }
-
- battle();
-}
-
-function finishCheck(){
- if(enemy.hp>0){
-  enemyTurn();
-  return;
- }
-
- let e=enemy;
- enemy=null;
-
- log(e.name+"を倒した！");
- player.xp+=e.xp;
- player.gold+=e.gold;
-
- if(e.shard && player.shard<3){
-  player.shard++;
-  log("✨ 星のかけらを入手！");
- }
-
- while(player.xp>=player.nextXp){
-  player.xp-=player.nextXp;
-  player.level++;
-  player.nextXp=Math.floor(player.nextXp*1.5);
-  player.maxHp+=8;
-  player.maxMp+=3;
-  player.hp=player.maxHp;
-  player.mp=player.maxMp;
-  log("LEVEL UP！ レベル"+player.level+"！");
- }
-
- update();
- forest();
-}
-
-function temple(){
- if(player.shard<3){
-  show("🏛️ 星の神殿",
-   "扉は閉ざされている。星のかけらがあと"+
-   (3-player.shard)+"個必要だ。",
-   [{name:"森へ戻る",action:forest,primary:true}]);
-  return;
- }
-
- if(bossDefeated){
-  show("🌟 星の神殿",
-   "世界に平和が戻った！",
-   [{name:"村へ戻る",action:village}]);
-  return;
- }
-
- enemy={
-  name:"星喰いドラゴン",
-  emoji:"🐉",
-  hp:120+player.level*10,
-  maxHp:120+player.level*10,
-  atk:14+player.level*2,
-  xp:100,gold:100,boss:true
- };
-
- battle();
- document.getElementById("scene").textContent=
- "最終ボス、星喰いドラゴンが現れた！";
-}
-
-const originalFinish=finishCheck;
-
-finishCheck=function(){
- if(enemy && enemy.boss && enemy.hp<=0){
-  bossDefeated=true;
-  player.xp+=100;
-  player.gold+=100;
-  enemy=null;
-  show("🏆 エンディング",
-   "ドラゴンを倒した！星々が夜空に輝き、世界に平和が戻った！",
-   [{name:"村へ戻る",action:village,primary:true}]);
-  log("おめでとう！ゲームクリア！");
-  return;
- }
- originalFinish();
-};
-
-function save(){
- localStorage.setItem("rpgSave",JSON.stringify({
-  player,bossDefeated
- }));
- log("セーブしました！");
-}
-
-function load(){
- let data=localStorage.getItem("rpgSave");
- if(!data){
-  log("セーブデータがありません！");
-  return;
- }
-
- try{
-  let d=JSON.parse(data);
-  player=d.player;
-  bossDefeated=d.bossDefeated;
-  enemy=null;
-  log("ロードしました！");
-  village();
- }catch(e){
-  log("ロードに失敗しました！");
- }
-}
-
-village();
-log("冒険が始まった！");
+update();
+showOptions();
 </script>
 </body>
 </html>
