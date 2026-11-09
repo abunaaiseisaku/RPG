@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>一番好きRPG</title>
+<title>一番好きRPG - バージョン選択</title>
 <style>
 *{box-sizing:border-box}
 body{
@@ -21,11 +20,15 @@ h2{color:#f6d477;margin-top:8px}
 button{
   background:#526fae;color:white;border:0;border-radius:8px;
   padding:11px 15px;font-size:15px;font-weight:bold;
-  margin:4px;cursor:pointer;
+  margin:6px 4px;cursor:pointer;
 }
 button:disabled{opacity:.4;cursor:not-allowed}
 button.sub{background:#475569}
 button.skill{background:#7955a8}
+button.item{background:#98713d}
+button.danger{background:#963f4b}
+button.version-btn{background:#2a4365;border:2px solid #52627c;font-size:16px;padding:15px 20px;display:block;width:100%;margin:10px 0;text-align:left}
+button.version-btn:hover{border-color:#f6d477;background:#39435a}
 .hidden{display:none!important}
 .center{text-align:center}
 .small{font-size:12px;color:#aebbd0}
@@ -61,7 +64,9 @@ button.skill{background:#7955a8}
 .mpbar span{background:#6bb9ef}
 .enemybar span{background:#e66b6b}
 .actions{
-  display:grid;grid-template-columns:repeat(2,1fr);gap:7px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:7px;
 }
 .actions button{margin:0}
 .skill-info{
@@ -97,7 +102,91 @@ button.skill{background:#7955a8}
   margin-top:10px;font-size:13px;text-align:center;
 }
 .field-status.active{display:block}
+.item-card{background:#29354c;border:1px solid #8065a8;border-radius:9px;padding:12px;line-height:1.7;font-size:14px;margin-bottom:8px}
 footer{text-align:center;color:#718096;font-size:12px;margin:25px}
+
+/* 世界吸収演出用スタイリング */
+#absorptionVortex{
+  display:none;position:fixed;inset:0;z-index:99999;
+  pointer-events:none;overflow:hidden;
+  background:radial-gradient(circle at center,transparent 0%,rgba(0,0,0,.12) 28%,rgba(0,0,0,.78) 100%)
+}
+#absorptionVortex .vortex-core{
+  position:absolute;left:50%;top:50%;width:28px;height:28px;
+  border-radius:50%;transform:translate(-50%,-50%) scale(.1);
+  background:#000;
+  box-shadow:0 0 25px 12px #25152f,0 0 75px 35px #000;
+  animation:vortexGrow 2.8s ease-in forwards
+}
+#absorptionVortex .vortex-title{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  color:#fff;font-size:clamp(26px,6vw,54px);
+  font-weight:900;letter-spacing:.25em;
+  text-shadow:0 0 18px #a88cff;
+  animation:titleSuck 2.6s ease-in forwards
+}
+#absorptionVortex .suction-label{
+  position:absolute;color:#e7ddff;font-weight:bold;
+  font-size:clamp(12px,2.5vw,20px);
+  text-shadow:0 0 8px #a88cff;
+  animation:labelSuck 2.2s ease-in forwards
+}
+body.world-absorbing{overflow:hidden;background:#000}
+body.absorption-stirring{overflow:hidden}
+body.absorption-stirring .container>section{
+  animation:absorptionShake .8s ease-in-out
+}
+@keyframes absorptionShake{
+  0%{transform:translate(0,0) scale(1)}
+  25%{transform:translate(-3px,2px) scale(.99)}
+  50%{transform:translate(3px,-2px) scale(.985)}
+  75%{transform:translate(-2px,1px) scale(.98)}
+  100%{transform:translate(0,0) scale(1)}
+}
+body.world-absorbing .container>header,
+body.world-absorbing .container>section,
+body.world-absorbing .container>footer{
+  animation:panelSuck 2.35s cubic-bezier(.55,0,.9,.35) forwards;
+  transform-origin:center center
+}
+body.world-absorbing .container button{
+  animation:buttonSuck 1.9s cubic-bezier(.55,0,.9,.35) forwards
+}
+body.world-absorbing #absorptionVortex{
+  display:block;animation:vortexDarken 2.8s ease-in forwards
+}
+@keyframes panelSuck{
+  0%{opacity:1;filter:blur(0);transform:scale(1) rotate(0)}
+  55%{opacity:.85;filter:blur(1px)}
+  100%{opacity:0;filter:blur(8px);transform:translate(0,0) scale(.015) rotate(12deg)}
+}
+@keyframes buttonSuck{
+  0%{opacity:1;transform:scale(1)}
+  45%{opacity:.9}
+  100%{opacity:0;transform:scale(.02) rotate(25deg)}
+}
+@keyframes vortexGrow{
+  0%{transform:translate(-50%,-50%) scale(.1)}
+  100%{transform:translate(-50%,-50%) scale(95)}
+}
+@keyframes vortexDarken{
+  0%{opacity:0}
+  35%{opacity:.35}
+  100%{opacity:1}
+}
+@keyframes titleSuck{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(1.4)}
+  20%{opacity:1}
+  75%{opacity:1}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(.08)}
+}
+@keyframes labelSuck{
+  0%{opacity:0;transform:translate(0,0) scale(1)}
+  15%{opacity:1}
+  100%{opacity:0;left:50%;top:50%;transform:translate(-50%,-50%) scale(.05)}
+}
+
 @media(max-width:480px){
   body{padding:9px}
   .panel{padding:11px}
@@ -111,15 +200,30 @@ footer{text-align:center;color:#718096;font-size:12px;margin:25px}
 <div class="container">
 
 <header>
-  <h1>一番好きRPG</h1>
+  <h1 id="mainTitle">一番好きRPG</h1>
+  <p id="mainSubtitle" class="center small">バージョン選択画面</p>
 </header>
 
-<section id="titleScreen" class="panel center">
-  <h2>一番好きRPG</h2>
-  <p>キャラクターを選び、全5章を攻略しよう。</p>
+<section id="versionSelectScreen" class="panel center">
+  <h2>プレイするバージョンを選んでください</h2>
+  <p class="small" style="margin-bottom:20px;">どちらのゲームで遊ぶかを選択できます。</p>
+
+  <button class="version-btn" onclick="initGame('v14')">
+    <strong>【始まりの物語】一番好きRPG</strong><br>
+  </button>
+
+  <button class="version-btn" onclick="initGame('v3')">
+    <strong>【十年後の物語】一番好きRPG 眠り続ける男</strong><br>
+  </button>
+</section>
+
+<section id="titleScreen" class="panel center hidden">
+  <h2 id="gameVersionTitle">一番好きRPG</h2>
+  <p id="gameVersionDesc">キャラクターを選び、全5章を攻略しよう。</p>
   <button onclick="showCharacterSelect()">ゲームスタート</button>
   <button class="sub" onclick="continueGame()">セーブデータから再開</button>
   <button class="sub" onclick="deleteSave()">セーブデータ削除</button>
+  <button class="sub" onclick="backToVersionSelect()">バージョン選択へ戻る</button>
   <p id="saveMessage" class="small"></p>
 </section>
 
@@ -137,7 +241,7 @@ footer{text-align:center;color:#718096;font-size:12px;margin:25px}
   <h2 id="storyTitle"></h2>
   <div id="storyText"></div>
   <div class="center">
-    <button onclick="startStageBattle()">戦闘開始</button>
+    <button id="storyButton" onclick="startStageBattle()">戦闘開始</button>
   </div>
 </section>
 
@@ -152,11 +256,12 @@ footer{text-align:center;color:#718096;font-size:12px;margin:25px}
         <div>MP：<span id="playerMpText"></span></div>
         <div class="bar mpbar"><span id="playerMpBar"></span></div>
         <div>攻撃力：<span id="playerAttack"></span></div>
+        <div class="small" id="playerStatus"></div>
       </div>
       <div class="status">
         <strong id="enemyName"></strong>
         <div>HP：<span id="enemyHpText"></span></div>
-        <div class="bar enemybar"><span id="enemyHpBar"></span></div>
+        <div class="bar"><span id="enemyHpBar"></span></div>
         <div>MP：<span id="enemyMpText"></span></div>
         <div class="bar mpbar"><span id="enemyMpBar"></span></div>
         <div>攻撃力：<span id="enemyAttack"></span></div>
@@ -175,6 +280,18 @@ footer{text-align:center;color:#718096;font-size:12px;margin:25px}
       <button class="skill" id="skillButton2" onclick="playerAction('skill2')"></button>
     </div>
     <div id="skillDescription" class="skill-info"></div>
+
+    <div class="center" style="margin-top:10px">
+      <button id="awakeningButton" class="item hidden" onclick="toggleAwakeningMenu()">覚醒具</button>
+    </div>
+    <div id="awakeningMenu" class="hidden">
+      <div class="item-card" id="awakeningDescription"></div>
+      <div class="center">
+        <button id="awakeningUseButton" class="item" onclick="useAwakening()">覚醒具を使用する</button>
+        <button class="sub" onclick="closeAwakeningMenu()">閉じる</button>
+      </div>
+    </div>
+
     <p class="small">ターン終了時にMPが5回復します。</p>
   </div>
 
@@ -189,6 +306,11 @@ footer{text-align:center;color:#718096;font-size:12px;margin:25px}
   </div>
 </section>
 
+<section id="itemPanel" class="panel hidden">
+  <h2>アイテム</h2>
+  <div id="itemList"></div>
+</section>
+
 <section id="resultScreen" class="panel center hidden">
   <h2 id="resultTitle"></h2>
   <p id="resultText" style="white-space:pre-wrap;line-height:1.8"></p>
@@ -197,7 +319,7 @@ footer{text-align:center;color:#718096;font-size:12px;margin:25px}
 </section>
 
 <section id="endingScreen" class="panel center hidden">
-  <h2 id="endingTitle">最終章　エンディング</h2>
+  <h2 id="endingTitle">最終話 エンディング</h2>
   <div id="endingText"></div>
   <div id="endingNote" class="ending-note hidden">
     俺は、ここが一番好きだった。
@@ -205,21 +327,23 @@ footer{text-align:center;color:#718096;font-size:12px;margin:25px}
   <button id="endingButton" onclick="endingNext()">次へ</button>
 </section>
 
-<footer>一番好きRPG</footer>
+<footer>一番好きRPG 통合版</footer>
+</div>
+
+<div id="absorptionVortex" aria-hidden="true">
+  <div class="vortex-core"></div>
+  <div class="vortex-title">吸収</div>
+  <span class="suction-label" style="left:8%;top:18%">床</span>
+  <span class="suction-label" style="left:78%;top:15%">壁</span>
+  <span class="suction-label" style="left:12%;top:72%">空気</span>
+  <span class="suction-label" style="left:80%;top:70%">光</span>
+  <span class="suction-label" style="left:45%;top:8%">音</span>
 </div>
 
 <script>
 "use strict";
 
-/* セーブデータ */
-const SAVE_KEY="ichibanSukiSaveV14";
-const OLD_SAVE_KEYS=[
- "ichibanSukiSaveV13",
- "ichibanSukiSaveV12",
- "ichibanSukiSaveV11",
- "ichibanSukiSaveV10"
-];
-const UNLOCK_KEY="ichibanSukiKurotaUnlocked";
+let activeVersion = null;
 
 let selectedCharacter=null;
 let player=null;
@@ -233,1178 +357,1649 @@ let gameState="title";
 let fieldEffect=null;
 let endingStep=0;
 
-const characters=[
+let awakeningOwned=false;
+let awakeningActive=false;
+let ankleOwned=false;
+let ankleEquipped=false;
+let checkpoint=null;
+let counterReady=false;
+let playerGuard=0;
+let enemyGuard=false;
+let enemyStopped=0;
+let enemyAttackDown=0;
+let playerBuff=0;
+let worldAbsorptionRunning=false;
+let finalAbsorptionPhase=0;
+
+const SAVE_KEY_V14="ichibanSukiSaveV14";
+const OLD_SAVE_KEYS=["ichibanSukiSaveV13","ichibanSukiSaveV12","ichibanSukiSaveV11","ichibanSukiSaveV10"];
+const UNLOCK_KEY="ichibanSukiKurotaUnlocked";
+
+const charactersV14=[
 {
- id:"takase",name:"高瀬 陽之助",
- description:"眠ることが大好きな少年。",
- abilityText:"寝落ち / 一番好き",
- maxHp:185,maxMp:60,attackPower:23,
- skills:[
-  {name:"寝落ち",cost:15,description:"眠りに落ち、自分に向けられた次の攻撃を無効化する。",effect:"sleep"},
-  {name:"一番好き",cost:25,description:"自分の攻撃力を上げ、敵の攻撃力を下げる。発動したターンを除き5ターン持続。",effect:"favorite"}
- ]
+  id:"takase",name:"高瀬 陽之助",description:"眠ることが大好きな少年。",abilityText:"寝落ち / 一番好き",
+  maxHp:185,maxMp:60,attackPower:23,
+  skills:[
+    {name:"寝落ち",cost:15,description:"眠りに落ち、自分に向けられた次の攻撃を無効化する。",effect:"sleep"},
+    {name:"一番好き",cost:25,description:"自分の攻撃力を上げ、敵の攻撃力を下げる。発動したターンを除き5ターン持続。",effect:"favorite"}
+  ]
 },
 {
- id:"uemura",name:"上村",
- description:"追い詰められるほど強くなる能力者。",
- abilityText:"かませ犬 / 逆転の拳",
- maxHp:120,maxMp:45,attackPower:17,
- skills:[
-  {name:"かませ犬",cost:15,description:"追い詰められた力を解放し、強烈な一撃を与える。",effect:"comeback"},
-  {name:"逆転の拳",cost:20,description:"残りHPが少ないほど威力が上がる。",effect:"lastPunch"}
- ]
+  id:"uemura",name:"上村",description:"追い詰められるほど強くなる能力者。",abilityText:"かませ犬 / 逆転の拳",
+  maxHp:120,maxMp:45,attackPower:17,
+  skills:[
+    {name:"かませ犬",cost:15,description:"追い詰められた力を解放し、強烈な一撃を与える。",effect:"comeback"},
+    {name:"逆転の拳",cost:20,description:"残りHPが少ないほど威力が上がる。",effect:"lastPunch"}
+  ]
 },
 {
- id:"imemura",name:"今村",
- description:"物体の役割を借り、相手の一手先を読む。",
- abilityText:"それ、借りるね / 一手先",
- maxHp:145,maxMp:80,attackPower:17,
- skills:[
-  {name:"それ、借りるね",cost:20,description:"敵の力を借りて攻撃し、敵の攻撃力を下げる。",effect:"borrow"},
-  {name:"一手先",cost:15,description:"敵の次の行動を読み、次の攻撃を回避する。",effect:"foresight"}
- ]
+  id:"imemura",name:"今村",description:"物体の役割を借り、相手の一手先を読む。",abilityText:"それ、借りるね / 一手先",
+  maxHp:145,maxMp:80,attackPower:17,
+  skills:[
+    {name:"それ、借りるね",cost:20,description:"敵の力を借りて攻撃し、敵の攻撃力を下げる。",effect:"borrow"},
+    {name:"一手先",cost:15,description:"敵の次の行動を読み、次の攻撃を回避する。",effect:"foresight"}
+  ]
 },
 {
- id:"matsuura",name:"松浦",
- description:"触れたものの価値を奪い、すべてを沈める。",
- abilityText:"価値を奪う / 沈む",
- maxHp:165,maxMp:65,attackPower:20,
- skills:[
-  {name:"価値を奪う",cost:20,description:"敵の力を奪い、攻撃力を下げる。",effect:"value"},
-  {name:"沈む",cost:25,description:"敵をヘドロに沈め、大ダメージを与える。",effect:"sink"}
- ]
+  id:"matsuura",name:"松浦",description:"触れたものの価値を奪い、すべてを沈める。",abilityText:"価値を奪う / 沈む",
+  maxHp:165,maxMp:65,attackPower:20,
+  skills:[
+    {name:"価値を奪う",cost:20,description:"敵の力を奪い、攻撃力を下げる。",effect:"value"},
+    {name:"沈む",cost:25,description:"敵をヘドロに沈め、大ダメージを与える。",effect:"sink"}
+  ]
 },
 {
- id:"kurota",name:"黒田",
- description:"出席と欠席を使い分ける能力者。",
- abilityText:"欠席 / 出席",
- maxHp:195,maxMp:85,attackPower:23,
- skills:[
-  {name:"欠席",cost:25,description:"次の敵の攻撃対象から外れる。",effect:"absence"},
-  {name:"出席",cost:20,description:"存在を強めて攻撃する。通常攻撃より大きなダメージを与える。",effect:"attendance"}
- ]
+  id:"kurota",name:"黒田",description:"出席と欠席を使い分ける能力者。",abilityText:"欠席 / 出席",
+  maxHp:195,maxMp:85,attackPower:23,
+  skills:[
+    {name:"欠席",cost:25,description:"次の敵の攻撃対象から外れる。",effect:"absence"},
+    {name:"出席",cost:20,description:"存在を強めて攻撃する。通常攻撃より大きなダメージを与える。",effect:"attendance"}
+  ]
 }
 ];
 
-const enemyData={
- uemura:{name:"上村",maxHp:120,attackPower:17,maxMp:45,ability:"かませ犬 / 逆転の拳"},
- imemura:{name:"今村",maxHp:145,attackPower:17,maxMp:80,ability:"それ、借りるね / 一手先"},
- matsuura:{name:"松浦",maxHp:165,attackPower:20,maxMp:65,ability:"価値を奪う / 沈む"},
- takase:{name:"高瀬 陽之助",maxHp:185,attackPower:23,maxMp:60,ability:"寝落ち / 一番好き"},
- kurota:{name:"黒田",maxHp:195,attackPower:23,maxMp:85,ability:"欠席 / 出席"}
+const enemyDataV14={
+  uemura:{name:"上村",maxHp:120,attackPower:17,maxMp:45,ability:"かませ犬 / 逆転の拳"},
+  imemura:{name:"今村",maxHp:145,attackPower:17,maxMp:80,ability:"それ、借りるね / 一手先"},
+  matsuura:{name:"松浦",maxHp:165,attackPower:20,maxMp:65,ability:"価値を奪う / 沈む"},
+  takase:{name:"高瀬 陽之助",maxHp:185,attackPower:23,maxMp:60,ability:"寝落ち / 一番好き"},
+  kurota:{name:"黒田",maxHp:195,attackPower:23,maxMp:85,ability:"欠席 / 出席"}
 };
 
-const stages=[
+const stagesV14=[
+{title:"第1話 始まり",enemies:["uemura"],story:"ある学校に、能力者がいるという噂があった。\n\n上村が学校を支配しようと動き出す。\nその前に立ちはだかるのは、もう一人の能力者。\n\n「今日から、ここは俺のものだ」\n\n戦いが始まる。"},
+{title:"第2話 テクニシャン",enemies:["imemura"],story:"次に現れたのは今村。\n\n物体の役割を借りる能力と、相手の一手先を読む能力を持つ。\n\n「君の行動は全部読めている」\n\n簡単には勝てない相手だ。"},
+{title:"第3話 ヘドロ",enemies:["matsuura"],story:"松浦が現れた。\n\n触れたものの価値を奪い、すべてを泥に変える。\n\n「沈め」\n\n黒いヘドロが広がり、戦場を覆っていく。"},
+{title:"第4話 能力者",enemies:["uemura","imemura","matsuura"],story:"能力者たちが集まり、校舎全体が戦場になった。\n\n上村、今村、松浦。\n\nそして、その背後には黒田がいる。\n\n「全員、戦え」\n\n次々と戦いが始まる。"},
+{title:"最終話 一番好き",enemies:["kurota"],story:"校舎は崩壊し、能力者たちは倒れていた。\n\n最後に残ったのは黒田。\n\n「お前を消してやる」\n\nすべてを終わらせる最後の戦いが始まる。"}
+];
+
+const endingScenesV14=[
+`黒田が倒れた。\n\n長い戦いが、ようやく終わった。\n\n崩れかけた校舎に、静けさが戻ってくる。\n\n能力者たちは、もう動かない。\n\n高瀬はゆっくりと周囲を見渡した。`,
+`ここは、ずっと自分が過ごしてきた場所だった。\n\n授業を受けた教室。\n友達と話した廊下。\n何気なく過ごした、いつもの時間。\n\n戦いの舞台になってしまったけれど、\nそれでも、ここにはたくさんの思い出があった。`,
+`高瀬は、いつものように眠気を感じた。\n\n「……少し寝るわ」\n\n誰も返事をしない。\n\n静かな教室で、高瀬は机に突っ伏した。\n\nそして、そのまま眠りについた。`,
+`翌朝。\n\n学校は閉鎖されていた。\n\n校門は閉ざされ、校舎には誰もいない。\n\n昨日まで確かに存在していたはずの記録も、\n能力者たちの名前も、戦いの痕跡も、\nすべて消えていた。`,
+`誰も、あの戦いを覚えていない。\n\n誰も、あの能力者たちを知らない。\n\nただ、教室の机の上に、\n一枚の小さなメモだけが残されていた。`
+];
+
+const SAVE_KEY_V3="nemuritsuzukeruOtoko_v3";
+
+const charactersV3=[
 {
- title:"第1話　始まり",
- enemies:["uemura"],
- story:`ある学校に、能力者がいるという噂があった。
-
-上村が学校を支配しようと動き出す。
-その前に立ちはだかるのは、もう一人の能力者。
-
-「今日から、ここは俺のものだ」
-
-戦いが始まる。`
+  id:"uemura",name:"上村",description:"受けた攻撃を利用して反撃する能力者。",abilityText:"かませ犬 / 最後の一発",
+  maxHp:155,maxMp:70,attackPower:30,
+  skills:[
+    {name:"かませ犬",cost:15,description:"敵の攻撃を受け止め、次の反撃を強化する。",effect:"counter"},
+    {name:"最後の一発",cost:25,description:"受けた攻撃を再現して大ダメージを与える。",effect:"lastAttack"}
+  ]
 },
 {
- title:"第2話　テクニシャン",
- enemies:["imemura"],
- story:`次に現れたのは今村。
-
-物体の役割を借りる能力と、相手の一手先を読む能力を持つ。
-
-「君の行動は全部読めている」
-
-簡単には勝てない相手だ。`
+  id:"yamano",name:"山野",description:"映像を記録し、現実に再現する。",abilityText:"Vlog / 切り抜き",
+  maxHp:145,maxMp:95,attackPower:20,
+  skills:[
+    {name:"Vlog",cost:20,description:"映像に映った戦闘を再現して攻撃する。",effect:"vlog"},
+    {name:"切り抜き",cost:30,description:"敵の一瞬を切り取り、次の行動を消す。",effect:"cut"}
+  ]
 },
 {
- title:"第3話　ヘドロ",
- enemies:["matsuura"],
- story:`松浦が現れた。
-
-触れたものの価値を奪い、すべてを泥に変える。
-
-「沈め」
-
-黒いヘドロが広がり、戦場を覆っていく。`
+  id:"mizushima",name:"水島",description:"相手の能力と勢いを弱める。",abilityText:"冷笑 / 温度差",
+  maxHp:160,maxMp:90,attackPower:20,
+  skills:[
+    {name:"冷笑",cost:20,description:"敵の攻撃力を低下させる。",effect:"cold"},
+    {name:"温度差",cost:30,description:"敵の勢いを奪い、行動を遅らせる。",effect:"temperature"}
+  ]
 },
 {
- title:"第4話　能力者",
- enemies:["uemura","imemura","matsuura"],
- story:`能力者たちが集まり、校舎全体が戦場になった。
-
-上村、今村、松浦。
-
-そして、その背後には黒田がいる。
-
-「全員、戦え」
-
-次々と戦いが始まる。`
+  id:"nakano",name:"中野",description:"あらゆるものを吸収し、力に変える。",abilityText:"吸収 / 返還",
+  maxHp:180,maxMp:110,attackPower:21,
+  skills:[
+    {name:"吸収",cost:20,description:"敵のHPを吸収して自分のHPを回復する。",effect:"absorb"},
+    {name:"返還",cost:35,description:"吸収した力を組み合わせて攻撃する。",effect:"return"}
+  ]
 },
 {
- title:"最終話　一番好き",
- enemies:["kurota"],
- story:`校舎は崩壊し、能力者たちは倒れていた。
-
-最後に残ったのは黒田。
-
-「お前を消してやる」
-
-すべてを終わらせる最後の戦いが始まる。`
+  id:"urata",name:"浦田",description:"電気・熱・衝撃・光を蓄積する。",abilityText:"チャージ / オーバーチャージ",
+  maxHp:155,maxMp:105,attackPower:20,
+  skills:[
+    {name:"チャージ",cost:0,description:"エネルギーを蓄積し、次の攻撃を強化する。",effect:"charge"},
+    {name:"オーバーチャージ",cost:30,description:"蓄積したエネルギーを一気に放出する。",effect:"overcharge"}
+  ]
 }
 ];
 
-function isKurotaUnlocked(){
- return localStorage.getItem(UNLOCK_KEY)==="true";
+const awakeningFormsV3={
+  uemura:{shape:"黒鉄の肩当て",ability:"重量操作",description:"物体の重さを自在に変化させる。",skills:[{name:"重圧",cost:20,description:"敵に強い重力をかける。",effect:"weight"},{name:"反重力",cost:30,description:"自分の身体を軽くし、攻撃を弱める。",effect:"antigravity"}]},
+  yamano:{shape:"赤い録画ランプが消えない小型カメラ",ability:"瞬間移動",description:"撮影した地点へ瞬間移動する。",skills:[{name:"フレーム移動",cost:20,description:"瞬間移動しながら攻撃を仕掛ける。",effect:"frameMove"},{name:"巻き戻し",cost:30,description:"自分の状態を巻き戻して回復する。",effect:"rewind"}]},
+  mizushima:{shape:"氷晶のような透明なピアス",ability:"結晶化",description:"触れたものを結晶へ変化させる。",skills:[{name:"結晶化",cost:20,description:"敵の身体を結晶化させる。",effect:"crystal"},{name:"砕氷",cost:30,description:"結晶化した敵に大ダメージを与える。",effect:"breakIce"}]},
+  nakano:{shape:"光を反射しない黒い金属の指輪",ability:"境界操作",description:"空間に境界を作り、攻撃を遮断する。",skills:[{name:"境界壁",cost:20,description:"次の攻撃を大幅に軽減する。",effect:"boundary"},{name:"空間断裂",cost:35,description:"空間を切り裂いて攻撃する。",effect:"spaceCut"}]},
+  urata:{shape:"光を蓄える腕時計",ability:"光速操作",description:"光の速度を操り、攻撃を高速化する。",skills:[{name:"高速化",cost:20,description:"次の攻撃を強化し、敵の攻撃を軽減する。",effect:"speed"},{name:"閃光",cost:30,description:"光を放ち、大ダメージを与える。",effect:"flash"}]}
+};
+
+const enemyDataV3={
+  kamiya:{name:"神谷",maxHp:190,maxMp:100,attackPower:22,ability:"摩擦操作"},
+  hunter:{name:"神谷の追手",maxHp:225,maxMp:80,attackPower:23,ability:"追跡"},
+  final:{name:"正気を失った中野",maxHp:180,maxMp:110,attackPower:21,ability:"吸収 / 返還"}
+};
+
+const stagesV3=[
+{id:"first",title:"第1話 十年後",enemies:["kamiya"],story:"十年前の戦いから十年。\n\nかつての能力者たちは、それぞれの生活を送っていた。\n\n上村は教師になり、今村は学校に残っていた。\n山野は学校の様子を撮影している。\n\nそんな平穏な日常に、一人の男が現れる。\n\n神谷。\n\n「十年前の続きを始めよう」\n\n再び、能力者たちの戦いが始まる。",after:"神谷は摩擦を操る能力を見せた。\n\n地面との摩擦を奪い、相手の動きを封じる。\nあるいは摩擦を増やし、動きを妨げる。\n\n「次は、もっと面白いものを見せてやる」\n\n神谷はその場から姿を消した。"},
+{id:"second",title:"第2話 覚醒具",enemies:["kamiya"],story:"神谷が再び現れた。\n\n今度の神谷の能力は「反射」。\n\n受けた攻撃を、そのまま相手へ返す能力だった。\n\n攻撃すればするほど、自分自身が傷ついてしまう。\n\n上村たちは、神谷の反射を突破するため、再び立ち向かう。",after:"神谷を退けた。\n\n戦いのあと、覚醒具についての手掛かりを手に入れた。\n\n覚醒具は一種類しかない。\nしかし、同じ種類の覚醒具が複数存在する。\n\n持つ者によって形状も能力も変わるという。\n\n手にした覚醒具は、選んだ人物に合わせて姿を変えた。\n\n新しい能力が目覚めた。",rewardAwakening:true},
+{id:"training",title:"第3話 修行編",training:true,story:"神谷との二度の戦いを終えた。\n\nしかし、神谷の能力はまだ完全には攻略できていない。\n\n上村たちは、次の戦いに備えて修行を始めることにした。\n\n「仲間同士で戦って、それぞれの能力を確かめよう」\n\n参加する仲間たちは修行の準備を整えた。\nこの修行編には、戦闘に参加する仲間だけが登場する。\n\n仲間との模擬戦が始まる。",after:"修行を終えた。\n\n仲間たちの能力を知り、自分の力の使い方も少しずつ分かってきた。\n\n次は神谷の計画を追う。"},
+{id:"flower",title:"第4話 花屋",enemies:["hunter"],story:"松浦は花屋を営んでいた。\n\n店の奥には、十年前の戦いで失われたものが保管されている。\n\n高瀬陽之助の左足首。\n\nそれは「一番好き」の残滓を宿していた。\n\n神谷の追手が現れ、松浦の店を襲撃する。",after:"追手を退けた。\n\n松浦は店の奥から、長い間保管していたものを取り出した。\n\n「これは、陽之助のものだ」\n\n高瀬陽之助の左足首を入手した。",rewardAnkle:true},
+{id:"sleep",title:"第5話 眠り続ける男",enemies:["kamiya"],kamiyaMode:"reflection",story:"十年間眠り続けている男。\n\n高瀬陽之助。\n\n今村は、陽之助の眠る場所を守っていた。\n\n神谷が現れ、最後の戦いを始める。\n\n「こいつを目覚めさせるわけにはいかない」\n\n陽之助の眠りを守るため、最後の戦いに挑む。",after:"神谷の攻撃が止まった。\n\n静かな部屋の中で、陽之助の指が動いた。\n\n十年間の眠りが、終わろうとしていた。"},
+{id:"final",title:"最終話 世界の終わり",enemies:["final"],story:"陽之助が目を覚ました。\n\n松浦が保管していた左足首も戻り、最後の戦いに向かう。\n\n中野は、世界全体を吸収しようとしていた。\n\n「腹減った」\n\nその言葉とともに、世界が歪み始める。\n\nすべてを終わらせる最後の戦いが始まる。",after:"中野は世界を吸収した。\n\n最後には、自分自身も吸収した。\n\n世界から、すべてが消えていった。\n\n――完。"}
+];
+
+const endingScenesV3=[
+`正気を失った中野は、戦いの最中に静かに立ち止まった。\n\n「……腹減った」\n\n中野の身体から、黒い光があふれ出す。\nそして、最後の「吸収」が始まった。`,
+`床が、壁が、天井が。\n周囲にあるものが、音を立てて中野の中へ吸い込まれていく。\n\n空気も、光も、音も消えていく。\n逃げ場はどこにもなかった。`,
+`建物が崩れながら吸い込まれていく。\n地面も、空も、海も、すべてが中野の中へ消えていく。\n\n遠くの景色も、目の前の景色も、少しずつ黒い渦へと飲み込まれていった。`,
+`中野は世界そのものを吸収した。\n\n何もなくなった世界に、中野の声だけが響く。\n\n「……まだ腹減ってる」\n\n中野は最後に、自分自身を吸収した。\nその身体も、声も、存在も、すべてが消えていった。`,
+`そして、世界は終わった。`
+];
+
+function initGame(version){
+  activeVersion=version;
+  document.getElementById("versionSelectScreen").classList.add("hidden");
+  document.getElementById("titleScreen").classList.remove("hidden");
+
+  if(version==='v14'){
+    document.getElementById("mainTitle").textContent="一番好きRPG";
+    document.getElementById("mainSubtitle").textContent="通常版（全5章）";
+    document.getElementById("gameVersionTitle").textContent="一番好きRPG";
+    document.getElementById("gameVersionDesc").textContent="キャラクターを選び、全5章を攻略しよう。";
+    const msg=localStorage.getItem(SAVE_KEY_V14)?"セーブデータがあります。":"セーブデータはありません。";
+    document.getElementById("saveMessage").textContent=msg;
+  }else{
+    document.getElementById("mainTitle").textContent="一番好きRPG 眠り続ける男";
+    document.getElementById("mainSubtitle").textContent="修正版（覚醒具・左足首アイテム）";
+    document.getElementById("gameVersionTitle").textContent="一番好きRPG 眠り続ける男";
+    document.getElementById("gameVersionDesc").textContent="キャラクターを選び、十年後の物語を攻略しよう。";
+    const msg=localStorage.getItem(SAVE_KEY_V3)?"セーブデータがあります。":"セーブデータはありません。";
+    document.getElementById("saveMessage").textContent=msg;
+  }
 }
 
-function getStageEnemies(stageIndex){
- return stages[stageIndex].enemies.map(id=>id===player.id?"takase":id);
-}
-
-function getStageStory(stageIndex){
- let story=stages[stageIndex].story;
- if(!player)return story;
- const map={uemura:"上村",imemura:"今村",matsuura:"松浦"};
- const name=map[player.id];
- if(name&&stages[stageIndex].enemies.includes(player.id)){
-  story=story.replaceAll(name,"高瀬");
- }
- return story;
+function backToVersionSelect(){
+  hideAll();
+  document.getElementById("versionSelectScreen").classList.remove("hidden");
+  document.getElementById("mainTitle").textContent="一番好きRPG";
+  document.getElementById("mainSubtitle").textContent="バージョン選択画面";
 }
 
 function hideAll(){
- ["titleScreen","selectScreen","storyScreen","battleScreen","resultScreen","endingScreen"]
- .forEach(id=>document.getElementById(id).classList.add("hidden"));
+  ["versionSelectScreen","titleScreen","selectScreen","storyScreen","battleScreen","resultScreen","endingScreen","itemPanel"]
+  .forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.classList.add("hidden");
+  });
 }
 
 function showTitle(){
- if(busy)return;
- hideAll();
- document.getElementById("titleScreen").classList.remove("hidden");
- gameState="title";
+  if(busy)return;
+  hideAll();
+  document.getElementById("titleScreen").classList.remove("hidden");
+  gameState="title";
+  updateSaveMessage();
+}
+
+function updateSaveMessage(){
+  const key=activeVersion==='v14'?SAVE_KEY_V14:SAVE_KEY_V3;
+  document.getElementById("saveMessage").textContent=
+    localStorage.getItem(key)?"セーブデータがあります。":"セーブデータはありません。";
 }
 
 function showCharacterSelect(){
- hideAll();
- document.getElementById("selectScreen").classList.remove("hidden");
- gameState="select";
- selectedCharacter=null;
- document.getElementById("startButton").disabled=true;
- renderCharacterList();
+  hideAll();
+  document.getElementById("selectScreen").classList.remove("hidden");
+  gameState="select";
+  selectedCharacter=null;
+  document.getElementById("startButton").disabled=true;
+  renderCharacterList();
 }
 
 function renderCharacterList(){
- const list=document.getElementById("characterList");
- list.innerHTML="";
+  const list=document.getElementById("characterList");
+  list.innerHTML="";
+  const chars=activeVersion==='v14'?charactersV14:charactersV3;
 
- const availableCharacters=characters.filter(c=>
-  c.id!=="kurota"||isKurotaUnlocked()
- );
+  chars.forEach(c=>{
+    if(activeVersion==='v14'&&c.id==="kurota"&&!isKurotaUnlocked())return;
+    const div=document.createElement("div");
+    div.className="character";
+    div.innerHTML=`
+      <h3>${c.name}</h3>
+      <p>${c.description}</p>
+      <p><strong>能力：</strong>${c.abilityText}</p>
+      <p>HP：${c.maxHp}</p>
+      <p>MP：${c.maxMp}</p>
+      <p>攻撃力：${c.attackPower}</p>
+      <hr>
+      <p><strong>${c.skills[0].name}</strong></p>
+      <p class="small">${c.skills[0].description}</p>
+      <p><strong>${c.skills[1].name}</strong></p>
+      <p class="small">${c.skills[1].description}</p>
+    `;
+    div.onclick=()=>{
+      selectedCharacter=c.id;
+      document.querySelectorAll(".character").forEach(x=>x.classList.remove("selected"));
+      div.classList.add("selected");
+      document.getElementById("startButton").disabled=false;
+    };
+    list.appendChild(div);
+  });
+}
 
- availableCharacters.forEach(c=>{
-  const div=document.createElement("div");
-  div.className="character";
-
-  const unlockLabel=c.id==="kurota"?
-   '<p style="color:#f6d477"><strong>クリア特典キャラクター</strong></p>':"";
-
-  div.innerHTML=`
-   <h3>${c.name}</h3>
-   ${unlockLabel}
-   <p>${c.description}</p>
-   <p><strong>能力：</strong>${c.abilityText}</p>
-   <p>HP：${c.maxHp}</p>
-   <p>MP：${c.maxMp}</p>
-   <p>攻撃力：${c.attackPower}</p><hr>
-   <p><strong>${c.skills[0].name}</strong></p>
-   <p class="small">${c.skills[0].description}</p>
-   <p><strong>${c.skills[1].name}</strong></p>
-   <p class="small">${c.skills[1].description}</p>`;
-
-  div.onclick=()=>{
-   selectedCharacter=c.id;
-   document.querySelectorAll(".character").forEach(x=>x.classList.remove("selected"));
-   div.classList.add("selected");
-   document.getElementById("startButton").disabled=false;
-  };
-
-  list.appendChild(div);
- });
+function isKurotaUnlocked(){
+  return localStorage.getItem(UNLOCK_KEY)==="true";
 }
 
 function startGame(){
- if(!selectedCharacter)return;
+  if(!selectedCharacter)return;
+  const chars=activeVersion==='v14'?charactersV14:charactersV3;
+  const base=chars.find(c=>c.id===selectedCharacter);
+  if(!base)return;
 
- const base=characters.find(c=>c.id===selectedCharacter);
- if(!base)return;
+  player={
+    id:base.id,name:base.name,
+    maxHp:base.maxHp,hp:base.maxHp,
+    maxMp:base.maxMp,mp:base.maxMp,
+    attackPower:base.attackPower,skills:base.skills,
+    sleepGuard:false,foresight:false,absent:false,
+    attackDownTurns:0,charge:0
+  };
 
- if(base.id==="kurota"&&!isKurotaUnlocked()){
-  alert("黒田はゲームクリア後に解放されます。");
-  return;
- }
-
- player={
-  id:base.id,name:base.name,
-  maxHp:base.maxHp,hp:base.maxHp,
-  maxMp:base.maxMp,mp:base.maxMp,
-  attackPower:base.attackPower,skills:base.skills,
-  sleepGuard:false,foresight:false,absent:false,
-  attackDownTurns:0
- };
-
- currentStage=0;
- enemyIndex=0;
- battleStartStatus=null;
- fieldEffect=null;
- loadStage();
+  currentStage=0;
+  enemyIndex=0;
+  battleStartStatus=null;
+  fieldEffect=null;
+  awakeningOwned=false;
+  awakeningActive=false;
+  ankleOwned=false;
+  ankleEquipped=false;
+  checkpoint=null;
+  busy=false;
+  loadStage();
 }
 
 function loadStage(){
- hideAll();
- const stage=stages[currentStage];
- document.getElementById("storyScreen").classList.remove("hidden");
- document.getElementById("storyTitle").textContent=stage.title;
- document.getElementById("storyText").textContent=getStageStory(currentStage);
- gameState="story";
- busy=false;
- autoSave();
+  hideAll();
+  const stages=activeVersion==='v14'?stagesV14:stagesV3;
+  const stage=stages[currentStage];
+
+  document.getElementById("storyScreen").classList.remove("hidden");
+  document.getElementById("storyTitle").textContent=stage.title;
+
+  let text=stage.story;
+  if(activeVersion==='v14'){
+    const map={uemura:"上村",imemura:"今村",matsuura:"松浦"};
+    const name=map[player.id];
+    if(name&&stage.enemies.includes(player.id)){
+      text=text.replaceAll(name,"高瀬");
+    }
+  }
+  document.getElementById("storyText").textContent=text;
+  document.getElementById("storyButton").textContent="戦闘開始";
+
+  gameState="story";
+  busy=false;
+
+  if(activeVersion==='v3'){
+    battleStartStatus={
+      hp:player.hp,mp:player.mp,maxHp:player.maxHp,maxMp:player.maxMp,
+      attackPower:player.attackPower,charge:player.charge||0
+    };
+    checkpoint=JSON.parse(JSON.stringify(battleStartStatus));
+    renderInventory();
+  }
+  autoSave();
+}
+
+function getStageEnemies(){
+  const stages=activeVersion==='v14'?stagesV14:stagesV3;
+  const stage=stages[currentStage];
+  if(activeVersion==='v14'){
+    return stage.enemies.map(id=>id===player.id?"takase":id);
+  }else{
+    if(stage.training){
+      return charactersV3.filter(c=>c.id!==player.id).map(c=>"training_"+c.id);
+    }
+    return stage.enemies;
+  }
 }
 
 function startStageBattle(){
- enemyIndex=0;
- battleStartStatus=null;
- fieldEffect=null;
- beginBattle();
+  enemyIndex=0;
+  battleStartStatus=null;
+  fieldEffect=null;
+  beginBattle();
 }
 
 function beginBattle(){
- const enemies=getStageEnemies(currentStage);
- const enemyKey=enemies[enemyIndex];
- const data=enemyData[enemyKey];
- if(!data)return;
+  const enemies=getStageEnemies();
+  const enemyKey=enemies[enemyIndex];
+  let data;
 
- if(enemyKey===player.id){
-  console.error("同じキャラクター同士の戦闘を防止しました。");
-  return;
- }
+  if(activeVersion==='v14'){
+    data=enemyDataV14[enemyKey];
+  }else{
+    if(enemyKey.startsWith("training_")){
+      const characterId=enemyKey.replace("training_","");
+      const base=charactersV3.find(c=>c.id===characterId);
+      data={
+        id:enemyKey,name:base.name+"（修行）",
+        maxHp:Math.floor(base.maxHp*.75),maxMp:base.maxMp,
+        attackPower:base.attackPower,ability:base.abilityText,
+        trainingCharacter:base
+      };
+    }else{
+      data=enemyDataV3[enemyKey];
+    }
+  }
+  if(!data)return;
 
- currentEnemy={
-  id:enemyKey,name:data.name,
-  maxHp:data.maxHp,hp:data.maxHp,
-  maxMp:data.maxMp,mp:data.maxMp,
-  attackPower:data.attackPower,
-  baseAttack:data.attackPower,
-  ability:data.ability,
-  sleepGuard:false,
-  foresight:false,
-  absent:false,
-  attackDownTurns:0
- };
+  /*
+    【今回の修正】
+    戦闘画面に入った時点で内部状態も battle にする。
+    これがないと playerAction() の
+    gameState!=="battle" の判定で行動が拒否される。
+  */
+  gameState="battle";
+  busy=false;
 
- if(!battleStartStatus){
-  battleStartStatus={
-   hp:player.hp,maxHp:player.maxHp,
-   mp:player.mp,maxMp:player.maxMp,
-   attackPower:player.attackPower
+  let ability=data.ability||"";
+  if(activeVersion==='v3'&&enemyKey==="kamiya"){
+    ability=currentStage===0?"摩擦操作":"反射";
+  }
+
+  currentEnemy={
+    id:enemyKey,name:data.name,
+    maxHp:data.maxHp,hp:data.maxHp,
+    maxMp:data.maxMp,mp:data.maxMp,
+    attackPower:data.attackPower||data.baseAttack,
+    baseAttack:data.attackPower||data.baseAttack,
+    ability,
+    sleepGuard:false,foresight:false,absent:false,
+    attackDownTurns:0,reflectReady:false,crystalized:false,
+    kamiyaMode:activeVersion==='v3'&&enemyKey==="kamiya"?(currentStage===0?"friction":"reflection"):null
   };
- }
 
- player.sleepGuard=false;
- player.foresight=false;
- player.absent=false;
- player.attackDownTurns=0;
- fieldEffect=null;
- defending=false;
- busy=false;
- gameState="battle";
+  if(!battleStartStatus){
+    battleStartStatus={
+      hp:player.hp,maxHp:player.maxHp,
+      mp:player.mp,maxMp:player.maxMp,
+      attackPower:player.attackPower
+    };
+  }
 
- hideAll();
- document.getElementById("battleScreen").classList.remove("hidden");
+  resetBattleEffects();
+  hideAll();
+  document.getElementById("battleScreen").classList.remove("hidden");
 
- document.getElementById("stageTitle").textContent=
-  stages[currentStage].title+
-  (enemies.length>1?"（戦闘 "+(enemyIndex+1)+"/"+enemies.length+"）":"");
+  const stages=activeVersion==='v14'?stagesV14:stagesV3;
+  document.getElementById("stageTitle").textContent=
+    stages[currentStage].title+
+    (enemies.length>1?"（"+(activeVersion==='v14'?'戦闘':'修行')+" "+(enemyIndex+1)+"/"+enemies.length+"）":"");
 
- if(enemyIndex===0)clearLog();
- addLog(stages[currentStage].title+" の戦闘開始！","story");
+  if(enemyIndex===0)clearLog();
+  addLog(stages[currentStage].title+" の戦闘開始！","story");
 
- if(enemyKey==="kurota")addLog("黒田：「お前を消してやる」","enemy");
- else if(enemyKey==="takase")addLog("高瀬：「俺も負けるつもりはない」","enemy");
- else addLog(currentEnemy.name+"が現れた！","enemy");
+  if(activeVersion==='v14'){
+    if(enemyKey==="kurota")addLog("黒田：「お前を消してやる」","enemy");
+    else if(enemyKey==="takase")addLog("高瀬：「俺も負けるつもりはない」","enemy");
+    else addLog(currentEnemy.name+"が現れた！","enemy");
+  }else{
+    if(currentEnemy.id==="kamiya"){
+      if(currentEnemy.kamiyaMode==="friction")addLog("神谷：「摩擦を操る。お前の動きは止められる」","enemy");
+      else addLog("神谷：「今度は反射だ。お前の攻撃を返してやる」","enemy");
+    }else if(currentEnemy.id==="final"){
+      addLog("正気を失った中野：「腹減った」","enemy");
+    }else{
+      addLog(currentEnemy.name+"が現れた！","enemy");
+    }
+    if(stages[currentStage].training)addLog("これは仲間同士の模擬戦だ。","story");
+  }
 
- updateBattleUI();
- autoSave();
+  updateBattleUI();
+  autoSave();
+}
+
+function resetBattleEffects(){
+  defending=false;
+  counterReady=false;
+  playerGuard=0;
+  enemyGuard=false;
+  enemyStopped=0;
+  enemyAttackDown=0;
+  playerBuff=0;
 }
 
 function clearLog(){
- document.getElementById("battleLog").innerHTML="";
+  document.getElementById("battleLog").innerHTML="";
 }
 
 function addLog(message,type="system"){
- const log=document.getElementById("battleLog");
- const div=document.createElement("div");
- div.className="log-"+type;
- div.textContent=message;
- log.appendChild(div);
- log.scrollTop=log.scrollHeight;
-}
-
-function effectivePlayerAttack(){
- let value=player.attackPower;
- if(fieldEffect&&fieldEffect.owner==="player")value+=10;
- if(fieldEffect&&fieldEffect.owner==="enemy")value-=8;
- if(player.attackDownTurns>0)value-=5;
- return Math.max(1,value);
-}
-
-function effectiveEnemyAttack(){
- let value=currentEnemy.attackPower;
- if(fieldEffect&&fieldEffect.owner==="enemy")value+=10;
- if(fieldEffect&&fieldEffect.owner==="player")value-=8;
- if(currentEnemy.attackDownTurns>0)value-=5;
- return Math.max(1,value);
-}
-
-function updateBattleUI(){
- if(!player||!currentEnemy)return;
-
- document.getElementById("playerName").textContent=player.name;
- document.getElementById("playerHpText").textContent=player.hp+" / "+player.maxHp;
- document.getElementById("playerMpText").textContent=player.mp+" / "+player.maxMp;
- document.getElementById("playerAttack").textContent=
-  effectivePlayerAttack()+(effectivePlayerAttack()!==player.attackPower?"（補正中）":"");
-
- document.getElementById("playerHpBar").style.width=
-  Math.max(0,player.hp/player.maxHp*100)+"%";
- document.getElementById("playerMpBar").style.width=
-  Math.max(0,player.mp/player.maxMp*100)+"%";
-
- document.getElementById("enemyName").textContent=currentEnemy.name;
- document.getElementById("enemyHpText").textContent=currentEnemy.hp+" / "+currentEnemy.maxHp;
- document.getElementById("enemyMpText").textContent=currentEnemy.mp+" / "+currentEnemy.maxMp;
- document.getElementById("enemyAttack").textContent=
-  effectiveEnemyAttack()+(effectiveEnemyAttack()!==currentEnemy.attackPower?"（補正中）":"");
-
- document.getElementById("enemyHpBar").style.width=
-  Math.max(0,currentEnemy.hp/currentEnemy.maxHp*100)+"%";
- document.getElementById("enemyMpBar").style.width=
-  Math.max(0,currentEnemy.mp/currentEnemy.maxMp*100)+"%";
- document.getElementById("enemyAbility").textContent="能力："+currentEnemy.ability;
-
- document.getElementById("skillButton1").textContent=
-  player.skills[0].name+"（"+player.skills[0].cost+"MP）";
- document.getElementById("skillButton2").textContent=
-  player.skills[1].name+"（"+player.skills[1].cost+"MP）";
-
- document.getElementById("skillButton1").disabled=
-  busy||player.mp<player.skills[0].cost;
- document.getElementById("skillButton2").disabled=
-  busy||player.mp<player.skills[1].cost;
-
- document.getElementById("attackButton").disabled=busy;
- document.getElementById("defendButton").disabled=busy;
-
- document.getElementById("skillDescription").textContent=
-  "① "+player.skills[0].description+"\n② "+player.skills[1].description;
-
- const field=document.getElementById("fieldStatus");
- if(fieldEffect&&fieldEffect.turns>0){
-  field.classList.add("active");
-  field.textContent=
-   (fieldEffect.owner==="player"?"自分側":"敵側")+
-   "の『一番好き』：攻撃力上昇・相手の攻撃力低下（残り"+
-   fieldEffect.turns+"ターン）";
- }else{
-  field.classList.remove("active");
-  field.textContent="";
- }
-}
-
-async function playerAction(action){
- if(busy||gameState!=="battle")return;
- busy=true;
- updateBattleUI();
- defending=false;
-
- if(action==="attack"){
-
-  if(currentEnemy.absent){
-   currentEnemy.absent=false;
-   addLog("黒田：「今日は欠席だ」","enemy");
-   addLog("黒田は攻撃対象から外れた！攻撃は当たらなかった。","system");
-
-  }else if(currentEnemy.foresight){
-   currentEnemy.foresight=false;
-   addLog(currentEnemy.name+"：「一手先を読んでいた」","enemy");
-   addLog("『一手先』によって攻撃を回避された！","system");
-
-  }else if(currentEnemy.sleepGuard){
-   currentEnemy.sleepGuard=false;
-   addLog(currentEnemy.name+"は眠りに落ちている。","enemy");
-   addLog("攻撃は眠りによって無効化された！","system");
-
-  }else{
-   const damage=effectivePlayerAttack()+random(0,5);
-   currentEnemy.hp-=damage;
-   addLog(player.name+"の攻撃！ "+damage+"ダメージ！","player");
-  }
- }
- else if(action==="defend"){
-  defending=true;
-  addLog(player.name+"は防御した。","player");
- }
- else if(action==="skill1"||action==="skill2"){
-  const index=action==="skill1"?0:1;
-  const skill=player.skills[index];
-
-  if(player.mp<skill.cost){
-   addLog("MPが足りない！","system");
-   busy=false;
-   updateBattleUI();
-   return;
-  }
-
-  player.mp-=skill.cost;
-  await useSkill(skill);
- }
-
- updateBattleUI();
-
- if(currentEnemy.hp<=0){
-  currentEnemy.hp=0;
-  updateBattleUI();
-  await wait(500);
-  enemyDefeated();
-  return;
- }
-
- await wait(700);
- const survived=await enemyTurn();
- if(!survived)return;
-
- player.mp=Math.min(player.maxMp,player.mp+5);
- currentEnemy.mp=Math.min(currentEnemy.maxMp,currentEnemy.mp+5);
-
- addLog("ターン終了。プレイヤーのMPが5回復した。","system");
- addLog("ターン終了。敵のMPが5回復した。","system");
-
- if(player.attackDownTurns>0){
-  player.attackDownTurns--;
-  if(player.attackDownTurns===0)addLog("攻撃力低下が解除された。","system");
- }
-
- if(currentEnemy.attackDownTurns>0){
-  currentEnemy.attackDownTurns--;
-  if(currentEnemy.attackDownTurns===0)addLog("敵の攻撃力低下が解除された。","system");
- }
-
- /*
-  一番好きのターン処理。
-  発動したターンはjustActivatedを解除するだけ。
-  次のターンから5ターン分を消費する。
- */
- if(fieldEffect){
-  if(fieldEffect.justActivated){
-   fieldEffect.justActivated=false;
-  }else{
-   fieldEffect.turns--;
-   if(fieldEffect.turns<=0){
-    addLog("フィールド効果『一番好き』が消えた。","system");
-    fieldEffect=null;
-   }
-  }
- }
-
- busy=false;
- updateBattleUI();
- autoSave();
-}
-
-async function useSkill(skill){
- switch(skill.effect){
-
- case "sleep":
-  addLog(player.name+"：「少し寝るわ」","player");
-  await wait(350);
-  addLog("『寝落ち』発動！次の攻撃を無効化する。","player");
-  player.sleepGuard=true;
-  player.hp=Math.min(player.maxHp,player.hp+15);
-  break;
-
- case "favorite":
-  fieldEffect={
-   owner:"player",
-   turns:5,
-   justActivated:true
-  };
-  addLog(player.name+"：「ここが一番好きだ」","player");
-  await wait(350);
-  addLog("『一番好き』発動！","player");
-  addLog("発動したターンはカウントせず、次のターンから5ターン持続する！","player");
-  addLog("自分の攻撃力が10上昇し、敵の攻撃力が8低下する！","player");
-  break;
-
- case "comeback":{
-  const missing=player.maxHp-player.hp;
-  const damage=20+Math.floor(missing*.25)+random(0,5);
-  currentEnemy.hp-=damage;
-  addLog("上村：「まだ終わらない！」","player");
-  await wait(350);
-  addLog("『かませ犬』！ "+damage+"ダメージ！","player");
-  break;
- }
-
- case "lastPunch":{
-  const ratio=1-player.hp/player.maxHp;
-  const damage=18+Math.floor(ratio*45)+random(0,5);
-  currentEnemy.hp-=damage;
-  addLog("上村：「ここから逆転する！」","player");
-  await wait(350);
-  addLog("『逆転の拳』！ "+damage+"ダメージ！","player");
-  break;
- }
-
- case "borrow":{
-  const damage=24+random(0,7);
-  currentEnemy.hp-=damage;
-  currentEnemy.attackDownTurns=Math.max(currentEnemy.attackDownTurns,3);
-  addLog("今村：「それ、借りるね」","player");
-  await wait(350);
-  addLog("敵の力を借りた！ "+damage+"ダメージ！敵の攻撃力が低下した！","player");
-  break;
- }
-
- case "foresight":
-  player.foresight=true;
-  addLog("今村：「次の一手は読めている」","player");
-  addLog("『一手先』！次の敵の攻撃を回避する。","player");
-  break;
-
- case "value":{
-  const damage=29+random(0,8);
-  currentEnemy.hp-=damage;
-  currentEnemy.attackDownTurns=Math.max(currentEnemy.attackDownTurns,3);
-  addLog("松浦：「お前の価値を奪う」","player");
-  await wait(350);
-  addLog("敵の価値を奪った！ "+damage+"ダメージ！攻撃力が低下した！","player");
-  break;
- }
-
- case "sink":{
-  const damage=40+random(0,10);
-  currentEnemy.hp-=damage;
-  addLog("松浦：「沈め」","player");
-  await wait(350);
-  addLog("『沈む』！ "+damage+"ダメージ！","player");
-  break;
- }
-
- // 黒田の「欠席」
- case "absence":
-  player.absent=true;
-  addLog("黒田：「今日は欠席だ」","player");
-  addLog("『欠席』発動！次の敵の攻撃対象から外れる。","player");
-  break;
-
- // 黒田の「出席」
- case "attendance":{
-  const damage=effectivePlayerAttack()+12+random(0,5);
-  currentEnemy.hp-=damage;
-  addLog("黒田：「出席」","player");
-  await wait(350);
-  addLog("『出席』発動！ "+damage+"ダメージ！","player");
-  break;
- }
- }
-
- updateBattleUI();
-}
-
-async function enemyTurn(){
- if(currentEnemy.hp<=0)return true;
-
- // 黒田のプレイヤー操作時の「欠席」
- if(player.absent){
-  player.absent=false;
-  addLog(player.name+"：「今日は欠席だ」","player");
-  addLog("『欠席』によって敵の攻撃対象から外れた！","player");
-  return true;
- }
-
- // プレイヤー側の今村の「一手先」
- if(player.foresight){
-  player.foresight=false;
-  addLog("『一手先』！敵の攻撃を見切って回避した！","player");
-  return true;
- }
-
- // プレイヤー側の高瀬の「寝落ち」
- if(player.sleepGuard){
-  player.sleepGuard=false;
-  addLog("眠っている間に攻撃を無効化した！","player");
-  return true;
- }
-
- let damage=effectiveEnemyAttack()+random(0,4);
- let abilityUsed=false;
-
- function useEnemyMP(cost){
-  if(currentEnemy.mp<cost)return false;
-  currentEnemy.mp-=cost;
-  addLog(currentEnemy.name+"のMPが"+cost+"減少した。","system");
-  return true;
- }
-
- // 上村
- if(currentEnemy.id==="uemura"){
-  if(currentEnemy.hp<currentEnemy.maxHp*.5&&Math.random()<.5&&useEnemyMP(15)){
-   damage+=7;
-   addLog("上村：「追い詰められてからが本番だ！」","enemy");
-   addLog("『かませ犬』発動！","enemy");
-   abilityUsed=true;
-  }else if(Math.random()<.25&&useEnemyMP(20)){
-   damage+=5;
-   addLog("上村：「逆転の拳！」","enemy");
-   addLog("『逆転の拳』発動！","enemy");
-   abilityUsed=true;
-  }
- }
-
- // 今村
- if(currentEnemy.id==="imemura"){
-  if(Math.random()<.45&&useEnemyMP(20)){
-   damage+=8;
-   player.attackDownTurns=Math.max(player.attackDownTurns,2);
-   addLog("今村：「それ、借りるね」","enemy");
-   addLog("『それ、借りるね』！","enemy");
-   addLog("こちらの攻撃力が低下した！","enemy");
-   abilityUsed=true;
-  }else if(Math.random()<.45&&useEnemyMP(15)){
-   currentEnemy.foresight=true;
-   addLog("今村：「一手先は読めている」","enemy");
-   addLog("『一手先』発動！","enemy");
-   addLog("次のプレイヤーの攻撃を見切る構えだ。","enemy");
-   abilityUsed=true;
-  }
- }
-
- // 松浦
- if(currentEnemy.id==="matsuura"){
-  if(Math.random()<.45&&useEnemyMP(20)){
-   damage+=10;
-   player.attackDownTurns=Math.max(player.attackDownTurns,2);
-   addLog("松浦：「価値を奪ってやる」","enemy");
-   addLog("『価値を奪う』！","enemy");
-   addLog("こちらの攻撃力が低下した！","enemy");
-   abilityUsed=true;
-  }else if(Math.random()<.4&&useEnemyMP(25)){
-   damage+=13;
-   addLog("松浦：「沈め！」","enemy");
-   addLog("『沈む』！ヘドロが襲いかかる！","enemy");
-   abilityUsed=true;
-  }
- }
-
- // 高瀬
- if(currentEnemy.id==="takase"){
-  if(Math.random()<.3&&useEnemyMP(15)){
-   currentEnemy.sleepGuard=true;
-   addLog("高瀬：「ちょっと寝るわ」","enemy");
-   addLog("『寝落ち』！","enemy");
-   addLog("次の攻撃を無効化する構えだ。","enemy");
-   abilityUsed=true;
-  }else if(Math.random()<.5&&useEnemyMP(25)){
-   fieldEffect={
-    owner:"enemy",
-    turns:5,
-    justActivated:true
-   };
-   damage+=5;
-   addLog("高瀬：「ここが一番好きだ」","enemy");
-   addLog("『一番好き』発動！","enemy");
-   addLog("発動したターンはカウントせず、次のターンから5ターン持続する！","enemy");
-   addLog("高瀬側の攻撃力が上昇し、こちらの攻撃力が低下した！","enemy");
-   abilityUsed=true;
-  }
- }
-
- // 黒田
- if(currentEnemy.id==="kurota"){
-  if(Math.random()<.3&&useEnemyMP(25)){
-   currentEnemy.absent=true;
-   addLog("黒田：「欠席」","enemy");
-   addLog("『欠席』発動！MP25消費","enemy");
-   addLog("黒田は次の攻撃対象から外れた！","enemy");
-   abilityUsed=true;
-  }else if(useEnemyMP(20)){
-   damage+=12;
-   addLog("黒田：「出席」","enemy");
-   addLog("『出席』発動！MP20消費","enemy");
-   addLog("存在を強め、攻撃力が上昇した！","enemy");
-   abilityUsed=true;
-  }
- }
-
- if(!abilityUsed){
-  addLog(currentEnemy.name+"は通常攻撃を選択した。","enemy");
- }
-
- if(defending){
-  damage=Math.floor(damage*.4);
-  addLog("防御してダメージを軽減！","player");
- }
-
- updateBattleUI();
- await wait(450);
-
- player.hp-=damage;
- addLog(currentEnemy.name+"の攻撃！ "+damage+"ダメージ！","enemy");
-
- if(player.hp<=0){
-  player.hp=0;
-  updateBattleUI();
-  await wait(450);
-  defeat();
-  return false;
- }
-
- updateBattleUI();
- return true;
-}
-
-function enemyDefeated(){
- busy=false;
- addLog(currentEnemy.name+"を倒した！","story");
-
- const recoveryHP=Math.ceil(player.maxHp*0.75);
-
- if(player.hp<recoveryHP){
-  const before=player.hp;
-  player.hp=recoveryHP;
-  addLog("戦闘後の回復！ HPが"+(player.hp-before)+"回復した（現在HP："+player.hp+"）","system");
- }else{
-  addLog("HPは十分に残っている。","system");
- }
-
- updateBattleUI();
-
- const enemies=getStageEnemies(currentStage);
-
- if(enemyIndex<enemies.length-1){
-  enemyIndex++;
-  addLog("次の能力者が現れた……","story");
-  currentEnemy=null;
-  autoSave();
-  setTimeout(()=>beginBattle(),1000);
-  return;
- }
-
- victory();
-}
-
-function victory(){
- busy=false;
- gameState="victory";
- hideAll();
- document.getElementById("resultScreen").classList.remove("hidden");
- document.getElementById("resultTitle").textContent="勝利！";
- document.getElementById("resultText").textContent=
-  currentEnemy.name+"に勝利した！\n戦闘後の回復が適用された。";
- document.getElementById("nextButton").textContent=
-  currentStage===stages.length-1?"エンディングへ":"次の章へ";
- autoSave();
-}
-
-function defeat(){
- busy=false;
- gameState="defeat";
- hideAll();
- document.getElementById("resultScreen").classList.remove("hidden");
- document.getElementById("resultTitle").textContent="敗北……";
- document.getElementById("resultText").textContent=
-  player.name+"は倒れてしまった。\n章の最初の状態に戻して再挑戦できる。";
- document.getElementById("nextButton").textContent="再挑戦";
- autoSave();
-}
-
-function nextStage(){
- if(gameState==="defeat"){
-  retryBattle();
-  return;
- }
-
- if(gameState!=="victory")return;
-
- if(currentStage>=stages.length-1){
-  startEnding();
-  return;
- }
-
- currentStage++;
- enemyIndex=0;
- battleStartStatus=null;
- fieldEffect=null;
-
- player.hp=Math.min(player.maxHp,player.hp+25);
- player.mp=Math.min(player.maxMp,player.mp+10);
-
- loadStage();
-}
-
-function retryBattle(){
- if(!battleStartStatus)return;
-
- player.hp=battleStartStatus.hp;
- player.maxHp=battleStartStatus.maxHp;
- player.mp=battleStartStatus.mp;
- player.maxMp=battleStartStatus.maxMp;
- player.attackPower=battleStartStatus.attackPower;
-
- player.sleepGuard=false;
- player.foresight=false;
- player.absent=false;
- player.attackDownTurns=0;
-
- fieldEffect=null;
- enemyIndex=0;
-
- beginBattle();
-}
-
-/* エンディング */
-
-const endingScenes=[
-`黒田が倒れた。
-
-長い戦いが、ようやく終わった。
-
-崩れかけた校舎に、静けさが戻ってくる。
-
-能力者たちは、もう動かない。
-
-高瀬はゆっくりと周囲を見渡した。`,
-
-`ここは、ずっと自分が過ごしてきた場所だった。
-
-授業を受けた教室。
-友達と話した廊下。
-何気なく過ごした、いつもの時間。
-
-戦いの舞台になってしまったけれど、
-それでも、ここにはたくさんの思い出があった。`,
-
-`高瀬は、いつものように眠気を感じた。
-
-「……少し寝るわ」
-
-誰も返事をしない。
-
-静かな教室で、高瀬は机に突っ伏した。
-
-そして、そのまま眠りについた。`,
-
-`翌朝。
-
-学校は閉鎖されていた。
-
-校門は閉ざされ、校舎には誰もいない。
-
-昨日まで確かに存在していたはずの記録も、
-能力者たちの名前も、戦いの痕跡も、
-すべて消えていた。`,
-
-`誰も、あの戦いを覚えていない。
-
-誰も、あの能力者たちを知らない。
-
-ただ、教室の机の上に、
-一枚の小さなメモだけが残されていた。`
-];
-
-function startEnding(){
- hideAll();
- document.getElementById("endingScreen").classList.remove("hidden");
- gameState="ending";
- endingStep=0;
- document.getElementById("endingTitle").textContent="最終話　一番好き";
- document.getElementById("endingNote").classList.add("hidden");
- document.getElementById("endingButton").textContent="次へ";
- showEndingScene();
- autoSave();
-}
-
-function showEndingScene(){
- document.getElementById("endingText").textContent=endingScenes[endingStep];
-
- if(endingStep===endingScenes.length-1){
-  document.getElementById("endingButton").textContent="メモを見る";
- }else{
-  document.getElementById("endingButton").textContent="次へ";
- }
-}
-
-function endingNext(){
- if(gameState!=="ending")return;
-
- if(endingStep<endingScenes.length-1){
-  endingStep++;
-  showEndingScene();
-  autoSave();
-  return;
- }
-
- if(endingStep===endingScenes.length-1){
-  document.getElementById("endingText").textContent="";
-  document.getElementById("endingNote").classList.remove("hidden");
-  document.getElementById("endingButton").textContent="タイトルへ";
-  endingStep++;
-  autoSave();
-  return;
- }
-
- // クリア後に黒田を解放
- localStorage.setItem(UNLOCK_KEY,"true");
-
- hideAll();
- document.getElementById("titleScreen").classList.remove("hidden");
- gameState="title";
-
- removeAllSaves();
-
- document.getElementById("saveMessage").textContent=
-  "ゲームクリア！黒田がプレイヤーキャラクターとして解放された！";
-}
-
-/* セーブ */
-
-function makeSaveData(){
- return {
-  version:14,
-  selectedCharacter,
-  player:{
-   id:player.id,name:player.name,
-   hp:player.hp,maxHp:player.maxHp,
-   mp:player.mp,maxMp:player.maxMp,
-   attackPower:player.attackPower,
-   sleepGuard:player.sleepGuard,
-   foresight:player.foresight,
-   absent:player.absent,
-   attackDownTurns:player.attackDownTurns
-  },
-  currentStage,enemyIndex,currentEnemy,
-  battleStartStatus,gameState,fieldEffect,endingStep
- };
-}
-
-function autoSave(){
- if(!player)return;
-
- try{
-  localStorage.setItem(SAVE_KEY,JSON.stringify(makeSaveData()));
- }catch(e){
-  console.error("セーブに失敗しました",e);
- }
-}
-
-function manualSave(){
- if(!player){
-  alert("セーブできるデータがありません。");
-  return;
- }
-
- autoSave();
- alert("セーブしました。");
-}
-
-function findSaveData(){
- const current=localStorage.getItem(SAVE_KEY);
- if(current)return {raw:current,key:SAVE_KEY};
-
- for(const key of OLD_SAVE_KEYS){
-  const raw=localStorage.getItem(key);
-  if(raw)return {raw,key};
- }
-
- return null;
-}
-
-function continueGame(){
- const found=findSaveData();
-
- if(!found){
-  document.getElementById("saveMessage").textContent="セーブデータがありません。";
-  return;
- }
-
- try{
-  const data=JSON.parse(found.raw);
-  const base=characters.find(c=>c.id===data.selectedCharacter);
-
-  if(!base)throw new Error("キャラクター情報がありません");
-
-  // 黒田は解放済みの場合のみ使用可能
-  if(base.id==="kurota"&&!isKurotaUnlocked()){
-   throw new Error("黒田は未解放です");
-  }
-
-  selectedCharacter=data.selectedCharacter;
-
-  player={
-   id:base.id,name:base.name,
-   hp:data.player.hp,maxHp:data.player.maxHp,
-   mp:data.player.mp,maxMp:data.player.maxMp,
-   attackPower:base.attackPower,
-   skills:base.skills,
-   sleepGuard:!!data.player.sleepGuard,
-   foresight:!!data.player.foresight,
-   absent:!!data.player.absent,
-   attackDownTurns:data.player.attackDownTurns||0
-  };
-
-  // 上村の攻撃力変更など、最新のキャラクター設定を反映
-  player.attackPower=base.attackPower;
-
-  currentStage=data.currentStage;
-  enemyIndex=data.enemyIndex||0;
-  currentEnemy=data.currentEnemy||null;
-
-  if(currentEnemy){
-   const enemyBase=enemyData[currentEnemy.id];
-
-   if(enemyBase){
-    currentEnemy.maxMp=enemyBase.maxMp;
-    currentEnemy.mp=currentEnemy.mp??enemyBase.maxMp;
-
-    // 最新の敵ステータスを反映
-    currentEnemy.attackPower=enemyBase.attackPower;
-    currentEnemy.baseAttack=enemyBase.attackPower;
-    currentEnemy.ability=enemyBase.ability;
-
-    if(currentEnemy.id==="kurota"){
-     currentEnemy.maxHp=enemyBase.maxHp;
-     currentEnemy.hp=Math.min(currentEnemy.hp,enemyBase.maxHp);
-     currentEnemy.maxMp=enemyBase.maxMp;
-     currentEnemy.mp=Math.min(currentEnemy.mp,enemyBase.maxMp);
-    }
-
-    currentEnemy.absent=!!currentEnemy.absent;
-    currentEnemy.foresight=!!currentEnemy.foresight;
-    currentEnemy.sleepGuard=!!currentEnemy.sleepGuard;
-    currentEnemy.attackDownTurns=currentEnemy.attackDownTurns||0;
-   }
-  }
-
-  battleStartStatus=data.battleStartStatus||null;
-  fieldEffect=data.fieldEffect||null;
-
-  // 旧データのフィールド効果にも対応
-  if(fieldEffect){
-   fieldEffect.justActivated=!!fieldEffect.justActivated;
-  }
-
-  endingStep=data.endingStep||0;
-  gameState=data.gameState;
-  busy=false;
-
-  if(gameState==="story"){
-   loadStage();
-
-  }else if(gameState==="battle"){
-
-   if(!currentEnemy){
-    beginBattle();
-   }else{
-    hideAll();
-    document.getElementById("battleScreen").classList.remove("hidden");
-
-    const enemies=getStageEnemies(currentStage);
-
-    document.getElementById("stageTitle").textContent=
-     stages[currentStage].title+
-     (enemies.length>1?"（戦闘 "+(enemyIndex+1)+"/"+enemies.length+"）":"");
-
-    clearLog();
-    addLog("セーブデータをロードした。","system");
-    updateBattleUI();
-   }
-
-  }else if(gameState==="defeat"||gameState==="victory"){
-
-   hideAll();
-   document.getElementById("resultScreen").classList.remove("hidden");
-
-   document.getElementById("resultTitle").textContent=
-    gameState==="defeat"?"敗北……":"勝利！";
-
-   document.getElementById("resultText").textContent=
-    gameState==="defeat"?"再挑戦できます。":"戦闘に勝利した！";
-
-   document.getElementById("nextButton").textContent=
-    gameState==="defeat"?"再挑戦":
-    currentStage===stages.length-1?"エンディングへ":"次の章へ";
-
-  }else if(gameState==="ending"){
-
-   hideAll();
-   document.getElementById("endingScreen").classList.remove("hidden");
-   document.getElementById("endingNote").classList.add("hidden");
-
-   if(endingStep>=endingScenes.length){
-    document.getElementById("endingText").textContent="";
-    document.getElementById("endingNote").classList.remove("hidden");
-    document.getElementById("endingButton").textContent="タイトルへ";
-   }else{
-    showEndingScene();
-   }
-
-  }else{
-   throw new Error("ゲームの進行状態が不正です");
-  }
-
-  autoSave();
-
-  if(found.key!==SAVE_KEY){
-   document.getElementById("saveMessage").textContent=
-    "旧バージョンのセーブデータを引き継ぎました。";
-  }
-
- }catch(e){
-  console.error(e);
-  alert("セーブデータを読み込めませんでした。");
- }
-}
-
-function removeAllSaves(){
- localStorage.removeItem(SAVE_KEY);
- OLD_SAVE_KEYS.forEach(key=>localStorage.removeItem(key));
-}
-
-function deleteSave(){
- if(confirm("セーブデータを削除しますか？")){
-  removeAllSaves();
-  document.getElementById("saveMessage").textContent="セーブデータを削除しました。";
- }
-}
-
-function random(min,max){
- return Math.floor(Math.random()*(max-min+1))+min;
+  const log=document.getElementById("battleLog");
+  const div=document.createElement("div");
+  div.className="log-"+type;
+  div.textContent=message;
+  log.appendChild(div);
+  log.scrollTop=log.scrollHeight;
 }
 
 function wait(ms){
- return new Promise(resolve=>setTimeout(resolve,ms));
+  return new Promise(resolve=>setTimeout(resolve,ms));
 }
 
-const existingSave=findSaveData();
+function random(min,max){
+  return Math.floor(Math.random()*(max-min+1))+min;
+}
 
-document.getElementById("saveMessage").textContent=
- existingSave?
- "セーブデータがあります。":
- "セーブデータはありません。";
+function effectivePlayerAttack(){
+  let value=player.attackPower+(playerBuff||0);
+  if(fieldEffect){
+    if(fieldEffect.owner==="player")value+=10;
+    else value-=8;
+  }
+  if(player.attackDownTurns>0)value-=5;
+  return Math.max(1,value);
+}
 
-if(isKurotaUnlocked()){
- document.getElementById("saveMessage").textContent+=" 黒田解放済み。";
+function effectiveEnemyAttack(){
+  let value=currentEnemy.attackPower-(enemyAttackDown||0);
+  if(currentEnemy.attackDownTurns>0)value-=5;
+  if(fieldEffect){
+    if(fieldEffect.owner==="enemy")value+=10;
+    else value-=8;
+  }
+  return Math.max(1,value);
+}
+
+function updateBattleUI(){
+  if(!player||!currentEnemy)return;
+
+  document.getElementById("playerName").textContent=player.name;
+  document.getElementById("playerHpText").textContent=player.hp+" / "+player.maxHp;
+  document.getElementById("playerMpText").textContent=player.mp+" / "+player.maxMp;
+  document.getElementById("playerAttack").textContent=effectivePlayerAttack();
+
+  document.getElementById("playerHpBar").style.width=Math.max(0,player.hp/player.maxHp*100)+"%";
+  document.getElementById("playerMpBar").style.width=Math.max(0,player.mp/player.maxMp*100)+"%";
+
+  if(activeVersion==='v3'){
+    document.getElementById("playerStatus").textContent=
+      awakeningActive?"覚醒具使用中（解除するまで継続）":"通常能力使用可能";
+    document.getElementById("awakeningButton").classList.toggle("hidden",!awakeningOwned);
+  }else{
+    document.getElementById("playerStatus").textContent="";
+    document.getElementById("awakeningButton").classList.add("hidden");
+  }
+
+  document.getElementById("enemyName").textContent=currentEnemy.name;
+  document.getElementById("enemyHpText").textContent=currentEnemy.hp+" / "+currentEnemy.maxHp;
+  document.getElementById("enemyMpText").textContent=currentEnemy.mp+" / "+currentEnemy.maxMp;
+  document.getElementById("enemyAttack").textContent=effectiveEnemyAttack();
+
+  document.getElementById("enemyHpBar").style.width=Math.max(0,currentEnemy.hp/currentEnemy.maxHp*100)+"%";
+  document.getElementById("enemyMpBar").style.width=Math.max(0,currentEnemy.mp/currentEnemy.maxMp*100)+"%";
+  document.getElementById("enemyAbility").textContent="能力："+currentEnemy.ability;
+
+  const skills=(activeVersion==='v3'&&awakeningActive)
+    ?awakeningFormsV3[player.id].skills
+    :player.skills;
+
+  document.getElementById("skillButton1").textContent=skills[0].name+"（"+skills[0].cost+"MP）";
+  document.getElementById("skillButton2").textContent=skills[1].name+"（"+skills[1].cost+"MP）";
+
+  document.getElementById("skillButton1").disabled=busy||player.mp<skills[0].cost;
+  document.getElementById("skillButton2").disabled=busy||player.mp<skills[1].cost;
+  document.getElementById("attackButton").disabled=busy;
+  document.getElementById("defendButton").disabled=busy;
+
+  document.getElementById("skillDescription").textContent=
+    "① "+skills[0].description+"\n② "+skills[1].description;
+
+  const field=document.getElementById("fieldStatus");
+  if(fieldEffect&&fieldEffect.turns>0){
+    field.classList.add("active");
+    field.textContent=(fieldEffect.owner==="player"?"自分側":"敵側")+
+      "の『一番好き』：攻撃力上昇・相手の攻撃力低下";
+  }else{
+    field.classList.remove("active");
+    field.textContent="";
+  }
+  if(activeVersion==='v3')renderInventory();
+}
+
+async function playerAction(action){
+  if(busy||gameState!=="battle"||player.hp<=0)return;
+
+  busy=true;
+  defending=false;
+  updateBattleUI();
+
+  try{
+    if(action==="attack"){
+      await normalAttack();
+    }else if(action==="defend"){
+      defending=true;
+      if(activeVersion==='v3')playerGuard=.6;
+      addLog(player.name+"は防御した。","player");
+    }else if(action==="skill1"||action==="skill2"){
+      await executeSkill(action==="skill1"?0:1);
+    }
+
+    if(player.hp<=0){
+      defeat();
+      return;
+    }
+
+    if(currentEnemy.hp<=0){
+      currentEnemy.hp=0;
+      updateBattleUI();
+      await wait(350);
+      enemyDefeated();
+      return;
+    }
+
+    updateBattleUI();
+    await wait(450);
+
+    const survived=await enemyTurn();
+    if(gameState==="ending")return;
+    if(!survived||player.hp<=0){
+      defeat();
+      return;
+    }
+
+    finishTurn();
+  }catch(e){
+    console.error(e);
+    busy=false;
+    updateBattleUI();
+    addLog("処理中にエラーが発生した。もう一度操作できる。","system");
+  }
+}
+
+async function normalAttack(){
+  if(currentEnemy.absent){
+    currentEnemy.absent=false;
+    addLog(activeVersion==='v14'?"黒田：「今日は欠席だ」":"敵は攻撃対象から外れている！","enemy");
+    addLog("攻撃は当たらなかった。","system");
+    return;
+  }
+  if(currentEnemy.foresight){
+    currentEnemy.foresight=false;
+    addLog(currentEnemy.name+"：「一手先を読んでいた」","enemy");
+    addLog("攻撃を回避された！","system");
+    return;
+  }
+  if(currentEnemy.sleepGuard){
+    currentEnemy.sleepGuard=false;
+    addLog("攻撃は眠りによって無効化された！","system");
+    return;
+  }
+
+  const damage=effectivePlayerAttack()+random(0,5);
+  if(activeVersion==='v14'){
+    currentEnemy.hp-=damage;
+    addLog(player.name+"の攻撃！ "+damage+"ダメージ！","player");
+  }else{
+    await damageToEnemy(damage,"通常攻撃");
+  }
+}
+
+async function damageToEnemy(damage,label="攻撃"){
+  if(currentEnemy.hp<=0)return;
+  damage=Math.max(1,Math.floor(damage));
+
+  if(enemyGuard){
+    damage=Math.floor(damage*.4);
+    enemyGuard=false;
+    addLog("敵の防御によってダメージが軽減された。","system");
+  }
+
+  currentEnemy.hp=Math.max(0,currentEnemy.hp-damage);
+  if(activeVersion==='v3'&&currentEnemy.id==="final"&&finalAbsorptionPhase<5&&currentEnemy.hp<=0){
+    currentEnemy.hp=1;
+  }
+  addLog(label+"！ "+damage+"ダメージ！","player");
+
+  if(activeVersion==='v3'&&currentEnemy.kamiyaMode==="reflection"&&currentEnemy.reflectReady&&damage>0){
+    currentEnemy.reflectReady=false;
+    const reflected=Math.max(1,Math.floor(damage*.35));
+    addLog("神谷：「反射」！構えていた力で攻撃を跳ね返した！","enemy");
+    player.hp=Math.max(0,player.hp-reflected);
+    addLog("反射によって"+reflected+"ダメージを受けた！","enemy");
+    updateBattleUI();
+  }
+
+  if(activeVersion==='v3'&&currentEnemy.kamiyaMode==="friction"&&currentEnemy.hp>0){
+    if(Math.random()<.3){
+      player.attackDownTurns=1;
+      addLog("神谷は摩擦を操り、動きを鈍らせた！次の攻撃力が低下する。","enemy");
+    }
+  }
+}
+
+async function executeSkill(index){
+  const skills=(activeVersion==='v3'&&awakeningActive)
+    ?awakeningFormsV3[player.id].skills
+    :player.skills;
+  const skill=skills[index];
+
+  if(player.mp<skill.cost){
+    addLog("MPが足りない！","system");
+    return;
+  }
+  player.mp-=skill.cost;
+
+  if(activeVersion==='v3'&&awakeningActive){
+    await useAwakeningSkill(skill);
+  }else{
+    await useOriginalSkill(skill,index);
+  }
+}
+
+async function useOriginalSkill(skill,index){
+  if(activeVersion==='v14'){
+    switch(skill.effect){
+      case "sleep":
+        addLog(player.name+"：「少し寝るわ」","player");
+        await wait(350);
+        addLog("『寝落ち』発動！次の攻撃を無効化する。","player");
+        player.sleepGuard=true;
+        player.hp=Math.min(player.maxHp,player.hp+15);
+        break;
+
+      case "favorite":
+        fieldEffect={owner:"player",turns:5,justActivated:true};
+        addLog(player.name+"：「ここが一番好きだ」","player");
+        await wait(350);
+        addLog("『一番好き』発動！攻撃力上昇＆敵攻撃力低下！","player");
+        break;
+
+      case "comeback":{
+        const missing=player.maxHp-player.hp;
+        const dmg=20+Math.floor(missing*.25)+random(0,5);
+        currentEnemy.hp-=dmg;
+        addLog("上村：「まだ終わらない！」","player");
+        await wait(350);
+        addLog("『かませ犬』！ "+dmg+"ダメージ！","player");
+        break;
+      }
+
+      case "lastPunch":{
+        const ratio=1-player.hp/player.maxHp;
+        const dmg=18+Math.floor(ratio*45)+random(0,5);
+        currentEnemy.hp-=dmg;
+        addLog("上村：「ここから逆転する！」","player");
+        await wait(350);
+        addLog("『逆転の拳』！ "+dmg+"ダメージ！","player");
+        break;
+      }
+
+      case "borrow":{
+        const dmg=24+random(0,7);
+        currentEnemy.hp-=dmg;
+        currentEnemy.attackDownTurns=Math.max(currentEnemy.attackDownTurns,3);
+        addLog("今村：「それ、借りるね」","player");
+        await wait(350);
+        addLog("敵の力を借りた！ "+dmg+"ダメージ！敵の攻撃力が低下した！","player");
+        break;
+      }
+
+      case "foresight":
+        player.foresight=true;
+        addLog("今村：「次の一手は読めている」","player");
+        addLog("『一手先』！次の敵の攻撃を回避する。","player");
+        break;
+
+      case "value":{
+        const dmg=29+random(0,8);
+        currentEnemy.hp-=dmg;
+        currentEnemy.attackDownTurns=Math.max(currentEnemy.attackDownTurns,3);
+        addLog("松浦：「お前の価値を奪う」","player");
+        await wait(350);
+        addLog("敵の価値を奪った！ "+dmg+"ダメージ！攻撃力が低下した！","player");
+        break;
+      }
+
+      case "sink":{
+        const dmg=40+random(0,10);
+        currentEnemy.hp-=dmg;
+        addLog("松浦：「沈め」","player");
+        await wait(350);
+        addLog("『沈む』！ "+dmg+"ダメージ！","player");
+        break;
+      }
+
+      case "absence":
+        player.absent=true;
+        addLog("黒田：「今日は欠席だ」","player");
+        addLog("『欠席』発動！次の攻撃対象から外れる。","player");
+        break;
+
+      case "attendance":{
+        const dmg=effectivePlayerAttack()+12+random(0,5);
+        currentEnemy.hp-=dmg;
+        addLog("黒田：「出席」","player");
+        await wait(350);
+        addLog("『出席』発動！ "+dmg+"ダメージ！","player");
+        break;
+      }
+    }
+  }else{
+    switch(skill.effect){
+      case "counter":
+        counterReady=true;
+        playerGuard=.4;
+        addLog("上村：「かませ犬で終わると思うなよ」","player");
+        break;
+
+      case "lastAttack":{
+        const dmg=counterReady?Math.floor(player.attackPower*2.8):Math.floor(player.attackPower*1.5);
+        counterReady=false;
+        await damageToEnemy(dmg,"最後の一発");
+        break;
+      }
+
+      case "vlog":{
+        const dmg=player.attackPower*2+random(0,8);
+        await damageToEnemy(dmg,"Vlog");
+        break;
+      }
+
+      case "cut":
+        enemyStopped=1;
+        addLog("山野：「そこ、切り抜くね」","player");
+        break;
+
+      case "cold":
+        enemyAttackDown=12;
+        addLog("水島：「冷笑」敵の能力が弱まった！","player");
+        break;
+
+      case "temperature":
+        enemyAttackDown=18;
+        enemyStopped=1;
+        addLog("水島：「温度差」敵の勢いを奪った！","player");
+        break;
+
+      case "absorb":{
+        await showAbsorptionEffect("中野","player",false);
+        const amount=Math.min(35,currentEnemy.hp);
+        currentEnemy.hp=Math.max(0,currentEnemy.hp-amount);
+        player.hp=Math.min(player.maxHp,player.hp+amount);
+        addLog(amount+"HPを吸収した！","player");
+        break;
+      }
+
+      case "return":{
+        const dmg=player.attackPower*2.5+random(0,10);
+        await damageToEnemy(dmg,"返還");
+        break;
+      }
+
+      case "charge":
+        player.charge+=20;
+        player.mp=Math.min(player.maxMp,player.mp+10);
+        addLog("浦田：「チャージ」蓄積："+player.charge,"player");
+        break;
+
+      case "overcharge":{
+        const dmg=player.attackPower*1.5+player.charge*2+random(0,8);
+        player.charge=0;
+        await damageToEnemy(dmg,"オーバーチャージ");
+        break;
+      }
+    }
+  }
+  updateBattleUI();
+}
+
+async function showAbsorptionEffect(actorName,type="enemy",isFinal=false){
+  const objects=["床","壁","空気","光","音"];
+  addLog(actorName+"：「吸収」",type);
+  for(const obj of objects){
+    addLog("周囲の"+obj+"が"+actorName+"の中へ吸い込まれていく……",type);
+    await wait(90);
+  }
+}
+
+async function performWorldAbsorption(){
+  if(worldAbsorptionRunning||gameState==="ending")return;
+  worldAbsorptionRunning=true;
+  finalAbsorptionPhase=Math.min(finalAbsorptionPhase+1,5);
+  const phase=finalAbsorptionPhase;
+  const stages=[
+    "中野の周囲で空気が渦を巻き始めた。",
+    "床や壁が軋み、建物の一部が引き寄せられていく。",
+    "景色そのものが崩れ始めた。",
+    "光と音が少しずつ消えていく。",
+    "世界のすべてを吸収した。"
+  ];
+
+  addLog("正気を失った中野：「吸収」","enemy");
+  addLog(stages[phase-1],"enemy");
+
+  if(phase<5){
+    const dmg=8+phase*4;
+    player.hp=Math.max(1,player.hp-dmg);
+    addLog("吸い込まれる力で"+dmg+"ダメージを受けた。","enemy");
+
+    const overlay=document.getElementById("absorptionVortex");
+    if(overlay){
+      overlay.style.display="block";
+      overlay.style.background=
+        `radial-gradient(circle at center,rgba(0,0,0,${0.08+phase*.09}) 0%,rgba(0,0,0,${0.18+phase*.13}) 100%)`;
+    }
+
+    document.body.classList.add("absorption-stirring");
+    await wait(850);
+    document.body.classList.remove("absorption-stirring");
+    if(overlay)overlay.style.display="none";
+
+    updateBattleUI();
+    worldAbsorptionRunning=false;
+    return;
+  }
+
+  addLog("周囲のすべてが消え、世界には何も残らなくなった。","system");
+  const finalOverlay=document.getElementById("absorptionVortex");
+  if(finalOverlay)finalOverlay.style.display="";
+  document.body.classList.add("world-absorbing");
+  await wait(2900);
+  document.body.classList.remove("world-absorbing");
+  worldAbsorptionRunning=false;
+  startEnding();
+}
+
+async function useAwakeningSkill(skill){
+  switch(skill.effect){
+    case "weight":
+      enemyAttackDown=20;
+      enemyStopped=1;
+      addLog("『重圧』！","player");
+      break;
+
+    case "antigravity":
+      playerGuard=.8;
+      playerBuff+=15;
+      addLog("『反重力』！","player");
+      break;
+
+    case "frameMove":
+      await damageToEnemy(player.attackPower*2,"フレーム移動");
+      playerGuard=.5;
+      break;
+
+    case "rewind":{
+      const before=player.hp;
+      player.hp=Math.min(player.maxHp,player.hp+55);
+      addLog("『巻き戻し』！HPが"+(player.hp-before)+"回復！","player");
+      break;
+    }
+
+    case "crystal":
+      enemyStopped=1;
+      currentEnemy.crystalized=true;
+      addLog("『結晶化』！","player");
+      break;
+
+    case "breakIce":{
+      if(!currentEnemy.crystalized){
+        addLog("敵は結晶化していない！","system");
+        break;
+      }
+      await damageToEnemy(player.attackPower*2.8,"砕氷");
+      currentEnemy.crystalized=false;
+      break;
+    }
+
+    case "boundary":
+      playerGuard=.85;
+      addLog("『境界壁』！","player");
+      break;
+
+    case "spaceCut":
+      await damageToEnemy(player.attackPower*3,"空間断裂");
+      break;
+
+    case "speed":
+      playerBuff+=25;
+      playerGuard=.4;
+      addLog("『高速化』！","player");
+      break;
+
+    case "flash":
+      await damageToEnemy(player.attackPower*2.7,"閃光");
+      break;
+  }
+}
+
+async function enemyTurn(){
+  if(currentEnemy.hp<=0)return true;
+  await wait(250);
+
+  if(activeVersion==='v3'&&enemyStopped>0){
+    enemyStopped--;
+    addLog(currentEnemy.name+"は行動できない！","system");
+    return true;
+  }
+
+  let damage=effectiveEnemyAttack()+random(0,4);
+  let abilityUsed=false;
+
+  if(activeVersion==='v14'){
+    if(currentEnemy.id==="uemura"){
+      if(currentEnemy.hp<currentEnemy.maxHp*.5&&Math.random()<.5&&useEnemyMPV14(15)){
+        damage+=7;
+        addLog("上村：「追い詰められてからが本番だ！」『かませ犬』！","enemy");
+        abilityUsed=true;
+      }else if(Math.random()<.25&&useEnemyMPV14(20)){
+        damage+=5;
+        addLog("上村：「逆転の拳！」","enemy");
+        abilityUsed=true;
+      }
+    }
+
+    if(currentEnemy.id==="imemura"){
+      if(Math.random()<.45&&useEnemyMPV14(20)){
+        damage+=8;
+        player.attackDownTurns=Math.max(player.attackDownTurns,2);
+        addLog("今村：「それ、借りるね」攻撃力低下！","enemy");
+        abilityUsed=true;
+      }else if(Math.random()<.45&&useEnemyMPV14(15)){
+        currentEnemy.foresight=true;
+        addLog("今村：「一手先は読めている」","enemy");
+        abilityUsed=true;
+      }
+    }
+
+    if(currentEnemy.id==="matsuura"){
+      if(Math.random()<.45&&useEnemyMPV14(20)){
+        damage+=10;
+        player.attackDownTurns=Math.max(player.attackDownTurns,2);
+        addLog("松浦：「価値を奪ってやる」","enemy");
+        abilityUsed=true;
+      }else if(Math.random()<.4&&useEnemyMPV14(25)){
+        damage+=13;
+        addLog("松浦：「沈め！」ヘドロが襲う！","enemy");
+        abilityUsed=true;
+      }
+    }
+
+    if(currentEnemy.id==="takase"){
+      if(Math.random()<.3&&useEnemyMPV14(15)){
+        currentEnemy.sleepGuard=true;
+        addLog("高瀬：「ちょっと寝るわ」『寝落ち』！","enemy");
+        abilityUsed=true;
+      }else if(Math.random()<.5&&useEnemyMPV14(25)){
+        fieldEffect={owner:"enemy",turns:5,justActivated:true};
+        damage+=5;
+        addLog("高瀬：「ここが一番好きだ」","enemy");
+        abilityUsed=true;
+      }
+    }
+
+    if(currentEnemy.id==="kurota"){
+      if(Math.random()<.3&&useEnemyMPV14(25)){
+        currentEnemy.absent=true;
+        addLog("黒田：「欠席」対象外になった！","enemy");
+        abilityUsed=true;
+      }else if(useEnemyMPV14(20)){
+        damage+=12;
+        addLog("黒田：「出席」攻撃力上昇！","enemy");
+        abilityUsed=true;
+      }
+    }
+  }else{
+    if(currentEnemy.kamiyaMode==="friction"&&Math.random()<.35){
+      damage+=8;
+      addLog("神谷は摩擦を増大させ、動きを封じた！","enemy");
+      abilityUsed=true;
+    }
+
+    if(currentEnemy.kamiyaMode==="reflection"&&currentEnemy.mp>=20&&!currentEnemy.reflectReady&&Math.random()<.30){
+      currentEnemy.mp-=20;
+      currentEnemy.reflectReady=true;
+      addLog("神谷：「反射」！反射の構えを取った！","enemy");
+      updateBattleUI();
+      return true;
+    }
+
+    if(currentEnemy.id.startsWith("training_")){
+      const id=currentEnemy.id.replace("training_","");
+      if(id==="uemura"&&Math.random()<.35){
+        damage+=12;
+        addLog("上村の『かませ犬』！","enemy");
+        abilityUsed=true;
+      }
+      if(id==="yamano"&&Math.random()<.35){
+        damage+=15;
+        addLog("山野の『Vlog』！","enemy");
+        abilityUsed=true;
+      }
+      if(id==="mizushima"&&Math.random()<.35){
+        damage+=5;
+        player.attackDownTurns=1;
+        addLog("水島の『冷笑』！","enemy");
+        abilityUsed=true;
+      }
+      if(id==="nakano"&&Math.random()<.3){
+        if(ankleOwned&&ankleEquipped&&Math.random()<.30){
+          addLog("左足首が反応して回避した！","player");
+          return true;
+        }
+        await showAbsorptionEffect("中野","enemy",false);
+        const amount=Math.min(20,player.hp);
+        player.hp-=amount;
+        currentEnemy.hp=Math.min(currentEnemy.maxHp,currentEnemy.hp+amount);
+        addLog("HPを"+amount+"吸収された！","enemy");
+        updateBattleUI();
+        return player.hp>0;
+      }
+      if(id==="urata"&&Math.random()<.35){
+        damage+=18;
+        addLog("浦田の『オーバーチャージ』！","enemy");
+        abilityUsed=true;
+      }
+    }
+
+    if(currentEnemy.id==="hunter"&&Math.random()<.3){
+      damage+=10;
+      addLog("追手の強烈な攻撃！","enemy");
+      abilityUsed=true;
+    }
+
+    if(currentEnemy.id==="final"&&(finalAbsorptionPhase>0||currentEnemy.hp<=1||Math.random()<.75)){
+      if(finalAbsorptionPhase===0&&ankleOwned&&ankleEquipped&&Math.random()<.30){
+        addLog("左足首が反応して回避した！","player");
+        return true;
+      }
+      await performWorldAbsorption();
+      return player.hp>0||gameState==="ending";
+    }
+  }
+
+  if(!abilityUsed){
+    addLog(currentEnemy.name+"は通常攻撃を選択した。","enemy");
+  }
+
+  if(activeVersion==='v3'&&abilityUsed&&ankleOwned&&ankleEquipped&&Math.random()<.30){
+    addLog("左足首が反応して敵の技を回避した！","player");
+    return true;
+  }
+
+  if(defending){
+    damage=Math.floor(damage*.4);
+    addLog("防御してダメージを軽減！","player");
+  }
+
+  if(activeVersion==='v3'&&playerGuard>0){
+    damage=Math.floor(damage*(1-playerGuard));
+    addLog("能力によって攻撃を防いだ！","player");
+  }
+
+  updateBattleUI();
+  await wait(350);
+
+  player.hp-=damage;
+  addLog(currentEnemy.name+"の攻撃！ "+damage+"ダメージ！","enemy");
+
+  if(player.hp<=0){
+    player.hp=0;
+    updateBattleUI();
+    await wait(450);
+    defeat();
+    return false;
+  }
+
+  updateBattleUI();
+  return true;
+}
+
+function useEnemyMPV14(cost){
+  if(currentEnemy.mp<cost)return false;
+  currentEnemy.mp-=cost;
+  return true;
+}
+
+function finishTurn(){
+  player.mp=Math.min(player.maxMp,player.mp+5);
+  currentEnemy.mp=Math.min(currentEnemy.maxMp,currentEnemy.mp+5);
+  addLog("ターン終了。双方のMPが5回復した。","system");
+
+  if(player.attackDownTurns>0){
+    player.attackDownTurns--;
+    if(player.attackDownTurns===0)addLog("攻撃力低下が解除された。","system");
+  }
+
+  if(currentEnemy.attackDownTurns>0){
+    currentEnemy.attackDownTurns--;
+    if(currentEnemy.attackDownTurns===0)addLog("敵の攻撃力低下が解除された。","system");
+  }
+
+  if(fieldEffect){
+    if(fieldEffect.justActivated){
+      fieldEffect.justActivated=false;
+    }else{
+      fieldEffect.turns--;
+      if(fieldEffect.turns<=0){
+        addLog("フィールド効果『一番好き』が消えた。","system");
+        fieldEffect=null;
+      }
+    }
+  }
+
+  if(activeVersion==='v3'){
+    playerBuff=0;
+    playerGuard=0;
+  }
+
+  busy=false;
+  updateBattleUI();
+  autoSave();
+}
+
+function enemyDefeated(){
+  busy=false;
+  addLog(currentEnemy.name+"を倒した！","story");
+
+  const recoveryHP=Math.ceil(player.maxHp*.75);
+  if(player.hp<recoveryHP){
+    const before=player.hp;
+    player.hp=recoveryHP;
+    addLog("戦闘後の回復！ HPが"+(player.hp-before)+"回復した。","system");
+  }else{
+    addLog("HPは十分に残っている。","system");
+  }
+
+  updateBattleUI();
+  const enemies=getStageEnemies();
+
+  if(enemyIndex<enemies.length-1){
+    enemyIndex++;
+    addLog("次の能力者が現れた……","story");
+    currentEnemy=null;
+    autoSave();
+    setTimeout(()=>beginBattle(),1000);
+    return;
+  }
+
+  victory();
+}
+
+function victory(){
+  busy=false;
+  gameState="victory";
+  hideAll();
+  document.getElementById("resultScreen").classList.remove("hidden");
+  document.getElementById("resultTitle").textContent="勝利！";
+
+  const stages=activeVersion==='v14'?stagesV14:stagesV3;
+  const stage=stages[currentStage];
+  let text=currentEnemy.name+"に勝利した！\n戦闘後の回復が適用された。";
+
+  if(activeVersion==='v3'){
+    text=currentEnemy.name+"に勝利した！\n\n"+stage.after;
+
+    if(currentEnemy.id==="final"){
+      text="正気を失った中野に勝利した！\n\n中野は倒れた。しかし、まだわずかな力が残っていた……";
+    }
+
+    if(stage.rewardAwakening&&!awakeningOwned){
+      obtainAwakening();
+      text+="\n\n覚醒具を入手した！";
+    }
+
+    if(stage.rewardAnkle&&!ankleOwned){
+      obtainAnkle();
+    }
+
+    if(stage.training){
+      text="修行編クリア！\n"+stage.after;
+    }
+  }
+
+  document.getElementById("resultText").textContent=text;
+  document.getElementById("nextButton").textContent=
+    currentStage===stages.length-1?"エンディングへ":"次の章へ";
+
+  if(activeVersion==='v3')renderInventory();
+  autoSave();
+}
+
+function defeat(){
+  busy=false;
+  gameState="defeat";
+  hideAll();
+  document.getElementById("resultScreen").classList.remove("hidden");
+  document.getElementById("resultTitle").textContent="敗北……";
+  document.getElementById("resultText").textContent=
+    player.name+"は倒れてしまった。\n章の最初の状態に戻して再挑戦できる。";
+  document.getElementById("nextButton").textContent="再挑戦";
+  autoSave();
+}
+
+function nextStage(){
+  if(gameState==="defeat"){
+    retryBattle();
+    return;
+  }
+  if(gameState!=="victory")return;
+
+  const stages=activeVersion==='v14'?stagesV14:stagesV3;
+  if(currentStage>=stages.length-1){
+    startEnding();
+    return;
+  }
+
+  currentStage++;
+  enemyIndex=0;
+  battleStartStatus=null;
+  fieldEffect=null;
+  if(activeVersion==='v3')awakeningActive=false;
+
+  player.hp=Math.min(player.maxHp,player.hp+25);
+  player.mp=Math.min(player.maxMp,player.mp+10);
+
+  loadStage();
+}
+
+function retryBattle(){
+  if(activeVersion==='v14'){
+    if(!battleStartStatus)return;
+    player.hp=battleStartStatus.hp;
+    player.maxHp=battleStartStatus.maxHp;
+    player.mp=battleStartStatus.mp;
+    player.maxMp=battleStartStatus.maxMp;
+    player.attackPower=battleStartStatus.attackPower;
+    player.sleepGuard=false;
+    player.foresight=false;
+    player.absent=false;
+    player.attackDownTurns=0;
+    fieldEffect=null;
+    enemyIndex=0;
+    beginBattle();
+  }else{
+    if(!checkpoint||!player)return;
+    player.hp=checkpoint.hp;
+    player.maxHp=checkpoint.maxHp;
+    player.mp=checkpoint.mp;
+    player.maxMp=checkpoint.maxMp;
+    player.attackPower=checkpoint.attackPower;
+    player.charge=checkpoint.charge||0;
+    player.attackDownTurns=0;
+    awakeningActive=false;
+    enemyIndex=0;
+    fieldEffect=null;
+    resetBattleEffects();
+    busy=false;
+    beginBattle();
+  }
+}
+
+function startEnding(){
+  hideAll();
+  document.getElementById("endingScreen").classList.remove("hidden");
+  gameState="ending";
+  endingStep=0;
+  const title=activeVersion==='v14'?"最終話 一番好き":"最終話 眠り続ける男";
+  document.getElementById("endingTitle").textContent=title;
+  if(activeVersion==='v14'){
+    document.getElementById("endingNote").classList.add("hidden");
+  }
+  showEndingScene();
+  autoSave();
+}
+
+function showEndingScene(){
+  const scenes=activeVersion==='v14'?endingScenesV14:endingScenesV3;
+  document.getElementById("endingText").textContent=scenes[endingStep];
+
+  if(activeVersion==='v14'){
+    if(endingStep===scenes.length-1){
+      document.getElementById("endingButton").textContent="メモを見る";
+    }else{
+      document.getElementById("endingButton").textContent="次へ";
+    }
+  }else{
+    document.getElementById("endingButton").textContent=
+      endingStep===scenes.length-1?"タイトルへ":"次へ";
+  }
+}
+
+function endingNext(){
+  if(gameState!=="ending")return;
+  const scenes=activeVersion==='v14'?endingScenesV14:endingScenesV3;
+
+  if(endingStep<scenes.length-1){
+    endingStep++;
+    showEndingScene();
+    autoSave();
+    return;
+  }
+
+  if(activeVersion==='v14'&&endingStep===scenes.length-1){
+    document.getElementById("endingText").textContent="";
+    document.getElementById("endingNote").classList.remove("hidden");
+    document.getElementById("endingButton").textContent="タイトルへ";
+    endingStep++;
+    autoSave();
+    return;
+  }
+
+  if(activeVersion==='v14'){
+    localStorage.setItem(UNLOCK_KEY,"true");
+  }
+
+  hideAll();
+  document.getElementById("titleScreen").classList.remove("hidden");
+  gameState="title";
+  removeSave();
+
+  const msg=activeVersion==='v14'?"ゲームクリア！黒田が解放された！":"ゲームクリア！";
+  document.getElementById("saveMessage").textContent=msg;
+}
+
+function obtainAwakening(){
+  if(awakeningOwned)return;
+  awakeningOwned=true;
+  awakeningActive=false;
+  const form=awakeningFormsV3[player.id];
+  addLog("覚醒具を入手した！形状が「"+form.shape+"」に変化した！","story");
+  renderInventory();
+}
+
+function obtainAnkle(){
+  if(ankleOwned)return;
+  ankleOwned=true;
+  ankleEquipped=true;
+  addLog("高瀬陽之助の左足首を入手し、自動で装備した！","story");
+  renderInventory();
+  updateBattleUI();
+  autoSave();
+}
+
+function toggleAnkleEquipment(){
+  if(!ankleOwned)return;
+  ankleEquipped=!ankleEquipped;
+  addLog("高瀬陽之助の左足首を"+(ankleEquipped?"装備した。":"外した。"),"system");
+  renderInventory();
+  updateBattleUI();
+  autoSave();
+}
+
+function renderInventory(){
+  if(activeVersion!=='v3')return;
+  const panel=document.getElementById("itemPanel");
+  const list=document.getElementById("itemList");
+
+  if(!awakeningOwned&&!ankleOwned){
+    panel.classList.add("hidden");
+    list.innerHTML="";
+    return;
+  }
+
+  panel.classList.remove("hidden");
+  list.innerHTML="";
+
+  if(awakeningOwned){
+    const form=awakeningFormsV3[player.id];
+    const div=document.createElement("div");
+    div.className="item-card";
+    div.innerHTML=`
+      <strong>覚醒具</strong>
+      <p>形状：${form.shape}</p>
+      <p>能力：${form.ability}</p>
+      <p>状態：${awakeningActive?"使用中":"未使用"}</p>
+    `;
+    list.appendChild(div);
+  }
+
+  if(ankleOwned){
+    const div=document.createElement("div");
+    div.className="item-card";
+    div.innerHTML=`
+      <strong>高瀬陽之助の左足首</strong>
+      <p>回避率：30％</p>
+      <p>状態：${ankleEquipped?"装備中":"未装備"}</p>
+      <button class="item" onclick="toggleAnkleEquipment()">${ankleEquipped?"装備を外す":"装備する"}</button>
+    `;
+    list.appendChild(div);
+  }
+}
+
+function toggleAwakeningMenu(){
+  if(busy||!awakeningOwned)return;
+  const menu=document.getElementById("awakeningMenu");
+  if(menu.classList.contains("hidden")){
+    menu.classList.remove("hidden");
+    updateAwakeningMenu();
+  }else{
+    menu.classList.add("hidden");
+  }
+}
+
+function closeAwakeningMenu(){
+  document.getElementById("awakeningMenu").classList.add("hidden");
+}
+
+function updateAwakeningMenu(){
+  const form=awakeningFormsV3[player.id];
+  document.getElementById("awakeningDescription").innerHTML=`
+    <strong>覚醒具</strong>
+    <p>形状：${form.shape}</p>
+    <p>能力：${form.ability}</p>
+  `;
+
+  const btn=document.getElementById("awakeningUseButton");
+  if(awakeningActive){
+    btn.textContent="覚醒具を解除する";
+    btn.onclick=deactivateAwakening;
+  }else{
+    btn.textContent="覚醒具を使用する";
+    btn.onclick=useAwakening;
+  }
+}
+
+async function useAwakening(){
+  if(busy||!awakeningOwned||awakeningActive||gameState!=="battle")return;
+
+  busy=true;
+  awakeningActive=true;
+  closeAwakeningMenu();
+  addLog("覚醒具を起動した！","player");
+  updateBattleUI();
+
+  await wait(350);
+  const survived=await enemyTurn();
+
+  if(!survived||player.hp<=0){
+    defeat();
+    return;
+  }
+
+  finishTurn();
+  autoSave();
+}
+
+function deactivateAwakening(){
+  if(busy||!awakeningActive)return;
+  awakeningActive=false;
+  closeAwakeningMenu();
+  addLog("覚醒具を解除した。","system");
+  updateBattleUI();
+  autoSave();
+}
+
+function makeSaveData(){
+  if(activeVersion==='v14'){
+    return {
+      version:14,selectedCharacter,
+      player:{
+        id:player.id,name:player.name,hp:player.hp,maxHp:player.maxHp,
+        mp:player.mp,maxMp:player.maxMp,attackPower:player.attackPower,
+        sleepGuard:player.sleepGuard,foresight:player.foresight,absent:player.absent,
+        attackDownTurns:player.attackDownTurns
+      },
+      currentStage,enemyIndex,currentEnemy,battleStartStatus,gameState,fieldEffect,endingStep
+    };
+  }else{
+    return {
+      version:3,selectedCharacter,
+      player:{
+        id:player.id,name:player.name,hp:player.hp,maxHp:player.maxHp,
+        mp:player.mp,maxMp:player.maxMp,attackPower:player.attackPower,
+        charge:player.charge,attackDownTurns:player.attackDownTurns
+      },
+      currentStage,enemyIndex,currentEnemy,battleStartStatus,checkpoint,
+      gameState,fieldEffect,awakeningOwned,awakeningActive,ankleOwned,ankleEquipped,endingStep
+    };
+  }
+}
+
+function autoSave(){
+  if(!player)return;
+  try{
+    const key=activeVersion==='v14'?SAVE_KEY_V14:SAVE_KEY_V3;
+    localStorage.setItem(key,JSON.stringify(makeSaveData()));
+  }catch(e){
+    console.error(e);
+  }
+}
+
+function manualSave(){
+  if(!player){
+    alert("セーブデータがありません。");
+    return;
+  }
+  autoSave();
+  alert("セーブしました。");
+}
+
+function removeSave(){
+  const key=activeVersion==='v14'?SAVE_KEY_V14:SAVE_KEY_V3;
+  localStorage.removeItem(key);
+}
+
+function deleteSave(){
+  if(confirm("セーブデータを削除しますか？")){
+    removeSave();
+    updateSaveMessage();
+    document.getElementById("saveMessage").textContent="セーブデータを削除しました。";
+  }
+}
+
+function continueGame(){
+  const key=activeVersion==='v14'?SAVE_KEY_V14:SAVE_KEY_V3;
+  let raw=localStorage.getItem(key);
+
+  if(!raw&&activeVersion==='v14'){
+    for(const oldKey of OLD_SAVE_KEYS){
+      raw=localStorage.getItem(oldKey);
+      if(raw)break;
+    }
+  }
+
+  if(!raw){
+    document.getElementById("saveMessage").textContent="セーブデータがありません。";
+    return;
+  }
+
+  try{
+    const data=JSON.parse(raw);
+    const chars=activeVersion==='v14'?charactersV14:charactersV3;
+    const base=chars.find(c=>c.id===data.selectedCharacter);
+    if(!base)throw new Error("キャラクター情報なし");
+
+    selectedCharacter=data.selectedCharacter;
+    player={
+      id:base.id,name:base.name,
+      hp:data.player.hp,maxHp:data.player.maxHp,
+      mp:data.player.mp,maxMp:data.player.maxMp,
+      attackPower:base.attackPower,skills:base.skills,
+      sleepGuard:!!data.player.sleepGuard,
+      foresight:!!data.player.foresight,
+      absent:!!data.player.absent,
+      attackDownTurns:data.player.attackDownTurns||0,
+      charge:data.player.charge||0
+    };
+
+    currentStage=data.currentStage;
+    enemyIndex=data.enemyIndex||0;
+    currentEnemy=data.currentEnemy||null;
+    battleStartStatus=data.battleStartStatus||null;
+    gameState=data.gameState;
+    fieldEffect=data.fieldEffect||null;
+    endingStep=data.endingStep||0;
+
+    busy=false;
+
+    if(activeVersion==='v3'){
+      checkpoint=data.checkpoint||battleStartStatus;
+      awakeningOwned=!!data.awakeningOwned;
+      awakeningActive=!!data.awakeningActive;
+      ankleOwned=!!data.ankleOwned;
+      ankleEquipped=!!(data.ankleEquipped??(data.ankleOwned&&!data.ankleUsed));
+    }
+
+    if(gameState==="story"){
+      loadStage();
+    }else if(gameState==="battle"){
+      if(!currentEnemy){
+        beginBattle();
+      }else{
+        hideAll();
+        document.getElementById("battleScreen").classList.remove("hidden");
+        const stages=activeVersion==='v14'?stagesV14:stagesV3;
+        document.getElementById("stageTitle").textContent=stages[currentStage].title;
+        clearLog();
+        addLog("セーブデータをロードした。","system");
+        updateBattleUI();
+      }
+    }else if(gameState==="victory"||gameState==="defeat"){
+      hideAll();
+      document.getElementById("resultScreen").classList.remove("hidden");
+      document.getElementById("resultTitle").textContent=
+        gameState==="victory"?"勝利！":"敗北……";
+      document.getElementById("nextButton").textContent=
+        gameState==="defeat"?"再挑戦":
+        (currentStage===(activeVersion==='v14'?stagesV14:stagesV3).length-1
+          ?"エンディングへ":"次の章へ");
+    }else if(gameState==="ending"){
+      startEnding();
+    }else{
+      showTitle();
+    }
+
+    if(activeVersion==='v3')renderInventory();
+  }catch(e){
+    console.error(e);
+    alert("ロードに失敗しました。");
+  }
 }
 </script>
 </body>
